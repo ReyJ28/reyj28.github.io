@@ -214,14 +214,21 @@ ol {
   -o-transition: all, 0.7s;
   transition: all, 0.7s;
 }
-
+.vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+	
 .site-btn {
   font-size: 15px;
   color: #ffffff;
   background: #00bfe7;
   font-family: "Play", sans-serif;
   font-weight: 700;
-  border: none;
+  border: 1px;
   display: inline-block;
   text-transform: uppercase;
   letter-spacing: 2px;
