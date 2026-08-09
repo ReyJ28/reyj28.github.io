@@ -1,0 +1,82 @@
+[
+  {
+    "id": "led-wall",
+    "name": "LED Walls",
+    "slug": "led-wall",
+    "path": "/led-wall/",
+    "short_desc": "High-impact LED display systems for stages, sets, and brand environments.",
+    "icon": "/images/icons/ci-1.png",
+    "is_primary": true,
+    "status": "verified"
+  },
+  {
+    "id": "projection",
+    "name": "Projection",
+    "slug": "projection",
+    "path": "/services/projection/",
+    "short_desc": "Large-format and mapped projection for stages, facades, and immersive environments.",
+    "icon": "/images/icons/ci-2.png",
+    "is_primary": false,
+    "status": "verified"
+  },
+  {
+    "id": "sound",
+    "name": "Sound",
+    "slug": "sound",
+    "path": "/services/sound/",
+    "short_desc": "Professional event audio systems and engineering.",
+    "icon": "/images/icons/ci-3.png",
+    "is_primary": false,
+    "status": "verified"
+  },
+  {
+    "id": "lights",
+    "name": "Lights",
+    "slug": "lights",
+    "path": "/services/lights/",
+    "short_desc": "Stage and event lighting design and production.",
+    "icon": "/images/icons/ci-4.png",
+    "is_primary": false,
+    "status": "verified"
+  },
+  {
+    "id": "live-streaming",
+    "name": "Live Streaming",
+    "slug": "live-streaming",
+    "path": "/services/live-streaming/",
+    "short_desc": "Broadcast-grade live streaming for events reaching audiences beyond the venue.",
+    "icon": "/images/optimized/icons/si-1-80.png",
+    "is_primary": false,
+    "status": "verified"
+  },
+  {
+    "id": "multimedia-consoles",
+    "name": "Multi-Media Consoles",
+    "slug": "multimedia-consoles",
+    "path": "/services/multimedia-consoles/",
+    "short_desc": "Show control and multi-media console operation tying video, audio, and lighting together.",
+    "icon": "/images/optimized/icons/si-3-80.png",
+    "is_primary": false,
+    "status": "verified"
+  },
+  {
+    "id": "rigging",
+    "name": "Rigging",
+    "slug": "rigging",
+    "path": "/services/rigging/",
+    "short_desc": "Specialized rigging for trussing, LED, and overhead production elements.",
+    "icon": "/images/icons/ci-1.png",
+    "is_primary": false,
+    "status": "verified"
+  },
+  {
+    "id": "technical-production",
+    "name": "Technical Production",
+    "slug": "technical-production",
+    "path": "/services/technical-production/",
+    "short_desc": "End-to-end technical production: event set-up, joinery and signage, utilities and telecom overlay.",
+    "icon": "/images/icons/ci-2.png",
+    "is_primary": false,
+    "status": "verified"
+  }
+]

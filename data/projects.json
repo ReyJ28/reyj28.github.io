@@ -1,0 +1,47 @@
+[
+  {
+    "id": "rcbc-wealth-dinner",
+    "title": "RCBC Wealth Dinner",
+    "slug": "rcbc-wealth-dinner",
+    "path": "/projects/rcbc-wealth-dinner/",
+    "client": "RCBC",
+    "year": "[Insert verified year]",
+    "category": "Corporate Event",
+    "tags": ["3D Projection", "Manila Visual Jocks x VideoSonic"],
+    "cover_image": "/images/projects/work-1.jpg",
+    "gallery": ["/images/projects/work-1.jpg"],
+    "summary": "A corporate wealth-management dinner production for RCBC, featuring 3D projection delivered in collaboration with Manila Visual Jocks x VideoSonic. [Additional project details can be added here.]",
+    "services_used": ["projection", "led-wall", "technical-production"],
+    "status": "verified-partial"
+  },
+  {
+    "id": "fiba-world-cup-2023",
+    "title": "FIBA World Cup 2023",
+    "slug": "fiba-world-cup-2023",
+    "path": "/projects/fiba-world-cup-2023/",
+    "client": "FIBA",
+    "year": "2023",
+    "category": "Sports / Game Experience",
+    "tags": ["LED Walls", "Game Experience"],
+    "cover_image": "/images/projects/work-4.jpg",
+    "gallery": ["/images/projects/work-4.jpg"],
+    "summary": "Game-experience production support for FIBA World Cup 2023. [Additional project details can be added here.]",
+    "services_used": ["led-wall", "sound", "lights"],
+    "status": "verified-partial"
+  },
+  {
+    "id": "miss-world-2018",
+    "title": "Miss World 2018",
+    "slug": "miss-world-2018",
+    "path": "/projects/miss-world-2018/",
+    "client": "Miss World",
+    "year": "2018",
+    "category": "Broadcast / Game Experience",
+    "tags": ["LED Walls", "Game Experience"],
+    "cover_image": "/images/projects/work-7.jpg",
+    "gallery": ["/images/projects/work-7.jpg"],
+    "summary": "Game-experience production support for Miss World 2018. [Additional project details can be added here.]",
+    "services_used": ["led-wall", "lights", "live-streaming"],
+    "status": "verified-partial"
+  }
+]
