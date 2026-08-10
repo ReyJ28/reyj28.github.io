@@ -40,17 +40,6 @@
       return;
     }
 
-    // reCAPTCHA: only enforced once a real site key is configured (see
-    // assets/js/recaptcha.js) -- until then window.__recaptchaActive is
-    // false/undefined and this is skipped entirely, honeypot only.
-    if (window.__recaptchaActive) {
-      var token = window.__getRecaptchaResponse ? window.__getRecaptchaResponse() : '';
-      if (!token) {
-        setStatus('Please complete the reCAPTCHA verification before sending.', 'error');
-        return;
-      }
-    }
-
     if (WEB3FORMS_ACCESS_KEY.indexOf('REPLACE_WITH') === 0) {
       setStatus(
         'This form isn’t connected yet. Please email salesandproduction@video-sonic.com or message us on WhatsApp at +63 927 884 5028 and we’ll follow up.',
@@ -77,7 +66,6 @@
         if (json.success) {
           setStatus('Thank you — your inquiry has been sent. We’ll follow up shortly.', 'success');
           form.reset();
-          if (window.__resetRecaptcha) window.__resetRecaptcha();
         } else {
           throw new Error(json.message || 'Submission failed');
         }
@@ -87,7 +75,6 @@
           'Something went wrong sending your inquiry. Please email salesandproduction@video-sonic.com directly.',
           'error'
         );
-        if (window.__resetRecaptcha) window.__resetRecaptcha();
       })
       .finally(function () {
         submitBtn.disabled = false;
