@@ -12,7 +12,7 @@ Web3Forms' architecture requires a **public** access key embedded in client-side
 ```js
 var WEB3FORMS_ACCESS_KEY = 'REPLACE_WITH_WEB3FORMS_ACCESS_KEY';
 ```
-This is an intentionally-invalid placeholder. **I cannot create the Web3Forms account or generate this key myself** — account creation is outside what I can do on your behalf. Until a real key is substituted, the form fails **safely**: it shows *"This form isn't connected yet. Please email salesandproduction@video-sonic.com or call +63 961 491 6871 directly"* instead of silently pretending to work (verified in the browser — see deployment verification in `PRODUCTION_DEPLOYMENT_REPORT.md`).
+This is an intentionally-invalid placeholder. **I cannot create the Web3Forms account or generate this key myself** — account creation is outside what I can do on your behalf. Until a real key is substituted, the form fails **safely**: it shows *"This form isn't connected yet. Please email salesandproduction@video-sonic.com or message us on WhatsApp at +63 927 884 5028"* instead of silently pretending to work (verified in the browser — see deployment verification in `PRODUCTION_DEPLOYMENT_REPORT.md`).
 
 ### To activate (steps for you)
 1. Go to web3forms.com, create a free account, verify **`salesandproduction@video-sonic.com`** as the destination inbox when creating the access key (this is the "Primary inquiry destination" from your approval — set once, on their dashboard, not in code).

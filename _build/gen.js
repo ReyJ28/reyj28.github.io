@@ -77,7 +77,7 @@ const FOOTER = `<footer class="site-footer">
         <img src="/images/brand/logo.png" width="167" height="30" alt="VideoSonic" style="height:32px;width:auto;margin-bottom:16px">
         <p>Professional LED display, AV and technical production solutions for high-impact events across the Philippines.</p>
         <p>Warehouse 5, Lagsa Compound,<br>San Pedro, Laguna, Philippines</p>
-        <p>(+63) 28815-2236 &middot; +63 961 491 6871<br><a href="mailto:salesandproduction@video-sonic.com">salesandproduction@video-sonic.com</a></p>
+        <p><a href="https://wa.me/639278845028" target="_blank" rel="noopener">WhatsApp: +63 927 884 5028</a><br><a href="mailto:salesandproduction@video-sonic.com">salesandproduction@video-sonic.com</a></p>
       </div>
       <div>
         <h4>Services</h4>
@@ -111,12 +111,12 @@ const FOOTER = `<footer class="site-footer">
       </div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; <span id="year"></span> VideoSonic. All rights reserved.</span>
+      <span>&copy; <span id="year"></span> VideoSonic. All rights reserved. Created and Maintain by: <a href="https://www.facebook.com/EliJackRey" target="_blank" rel="noopener">ReyJ</a></span>
       <span>Serving clients and events across the Philippines.</span>
     </div>
   </div>
 </footer>
-<div class="mobile-cta"><a href="tel:+639614916871">Call Us</a><a class="primary" href="/contact/">Request Quote</a></div>
+<div class="mobile-cta"><a href="https://wa.me/639278845028" target="_blank" rel="noopener">WhatsApp</a><a class="primary" href="/contact/">Request Quote</a></div>
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 <script src="/assets/js/site.js"></script>
 `;

@@ -77,7 +77,7 @@ page({
 page({
   route: '/contact/',
   title: 'Contact VideoSonic | Event Production Philippines',
-  description: 'Contact VideoSonic for LED wall rental and event production in the Philippines. Warehouse 5, Lagsa Compound, San Pedro, Laguna. (+63) 28815-2236.',
+  description: 'Contact VideoSonic for LED wall rental and event production in the Philippines. Warehouse 5, Lagsa Compound, San Pedro, Laguna. WhatsApp +63 927 884 5028.',
   canonical: 'https://www.video-sonic.com/contact/',
   active: 'contact',
   heroHtml: `
@@ -97,8 +97,8 @@ page({
       <div class="card reveal">
         <h3>Address</h3>
         <p>Warehouse 5, Lagsa Compound,<br>San Pedro, Laguna, Philippines</p>
-        <h3>Hotline</h3>
-        <p>(+63) 28815-2236<br>+63 961 491 6871</p>
+        <h3>WhatsApp</h3>
+        <p><a href="https://wa.me/639278845028" target="_blank" rel="noopener">+63 927 884 5028</a></p>
         <h3>Sales &amp; Production Inquiries</h3>
         <p><a href="mailto:salesandproduction@video-sonic.com">salesandproduction@video-sonic.com</a></p>
         <h3>Technical Support</h3>
@@ -156,12 +156,12 @@ page({
           <button class="btn btn-primary" type="submit">Send Request</button>
           <p id="quote-form-status" class="form-status" role="status" aria-live="polite"></p>
         </form>
-        <p style="margin-top:4px">Prefer email or phone? Reach us directly at <a href="mailto:salesandproduction@video-sonic.com">salesandproduction@video-sonic.com</a> or <a href="tel:+639614916871">+63 961 491 6871</a>.</p>
+        <p style="margin-top:4px">Prefer email or WhatsApp? Reach us directly at <a href="mailto:salesandproduction@video-sonic.com">salesandproduction@video-sonic.com</a> or <a href="https://wa.me/639278845028" target="_blank" rel="noopener">WhatsApp +63 927 884 5028</a>.</p>
       </div>
     </div>
   </div>
 </section>`,
-  extraHead: `<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"VideoSonic","image":"https://www.video-sonic.com/images/brand/logo.png","address":{"@type":"PostalAddress","streetAddress":"Warehouse 5, Lagsa Compound","addressLocality":"San Pedro","addressRegion":"Laguna","addressCountry":"PH"},"telephone":"+63-2-8815-2236","email":"salesandproduction@video-sonic.com","url":"https://www.video-sonic.com/contact/"}</script>`,
+  extraHead: `<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"VideoSonic","image":"https://www.video-sonic.com/images/brand/logo.png","address":{"@type":"PostalAddress","streetAddress":"Warehouse 5, Lagsa Compound","addressLocality":"San Pedro","addressRegion":"Laguna","addressCountry":"PH"},"telephone":"+63-927-884-5028","email":"salesandproduction@video-sonic.com","url":"https://www.video-sonic.com/contact/"}</script>`,
   extraScripts: '<script src="/assets/js/contact-form.js"></script>',
   breadcrumb: [["Home", "https://www.video-sonic.com/"], ["Contact", "https://www.video-sonic.com/contact/"]],
 });
@@ -190,8 +190,8 @@ page({
       <div class="card reveal">
         <h3>Address</h3>
         <p>Warehouse 5, Lagsa Compound, San Pedro, Laguna, Philippines</p>
-        <h3>Hotline</h3>
-        <p>(+63) 28815-2236 or +63 961 491 6871</p>
+        <h3>WhatsApp</h3>
+        <p><a href="https://wa.me/639278845028" target="_blank" rel="noopener">+63 927 884 5028</a></p>
         <h3>Email</h3>
         <p><a href="mailto:salesandproduction@video-sonic.com">salesandproduction@video-sonic.com</a></p>
       </div>

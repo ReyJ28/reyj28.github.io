@@ -5,7 +5,7 @@ const { results } = require('./audit-results.json');
 
 const EXPECTED = {
   name: 'VideoSonic',
-  telephone: '+63-2-8815-2236',
+  telephone: '+63-927-884-5028',
   email: 'salesandproduction@video-sonic.com',
   streetAddress: 'Warehouse 5, Lagsa Compound',
   addressLocality: 'San Pedro',

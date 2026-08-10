@@ -36,7 +36,7 @@
 
     if (WEB3FORMS_ACCESS_KEY.indexOf('REPLACE_WITH') === 0) {
       setStatus(
-        'This form isn’t connected yet. Please email salesandproduction@video-sonic.com or call +63 961 491 6871 directly and we’ll follow up.',
+        'This form isn’t connected yet. Please email salesandproduction@video-sonic.com or message us on WhatsApp at +63 927 884 5028 and we’ll follow up.',
         'error'
       );
       return;
