@@ -56,7 +56,7 @@ const HEADER = (active) => {
       </div>
       <div class="nav__actions">
         <a class="btn btn-outline" href="https://videosonic-erp-web.vercel.app/login">Log In</a>
-        <a class="btn btn-primary" href="/contact/">Request an LED Quote</a>
+        <a class="btn btn-primary" href="/contact/">Request a LED Quote</a>
         <button class="nav__toggle" data-nav-toggle aria-expanded="false" aria-label="Menu">&#9776;</button>
       </div>
     </nav>
