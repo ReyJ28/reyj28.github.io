@@ -15,15 +15,15 @@ var WEB3FORMS_ACCESS_KEY = 'REPLACE_WITH_WEB3FORMS_ACCESS_KEY';
 This is an intentionally-invalid placeholder. **I cannot create the Web3Forms account or generate this key myself** — account creation is outside what I can do on your behalf. Until a real key is substituted, the form fails **safely**: it shows *"This form isn't connected yet. Please email salesandproduction@video-sonic.com or message us on WhatsApp at +63 927 884 5028"* instead of silently pretending to work (verified in the browser — see deployment verification in `PRODUCTION_DEPLOYMENT_REPORT.md`).
 
 ### To activate (steps for you)
-1. Go to web3forms.com, create a free account, verify **`salesandproduction@video-sonic.com`** as the destination inbox when creating the access key (this is the "Primary inquiry destination" from your approval — set once, on their dashboard, not in code).
+1. Go to web3forms.com, create a free account, verify **`marketingnsales18@gmail.com`** as the destination inbox when creating the access key (updated per your latest instruction — set once, on their dashboard, not in code).
 2. Copy the generated access key.
 3. Replace `REPLACE_WITH_WEB3FORMS_ACCESS_KEY` in `assets/js/contact-form.js` with the real key, commit, and redeploy.
 4. Optionally enable Web3Forms' built-in spam filtering / reCAPTCHA in their dashboard for extra protection beyond the honeypot already built in.
 
 ## Email routing decision
-Per your instruction, the form's single destination is **`salesandproduction@video-sonic.com`** only — it does **not** also send to `technicaln@video-sonic.com`. Investigating the live site's actual `contact.html` (raw source, not rendered) showed its one existing form ("Get a quote" — Name/Email/Message) posts via `mailto:technicaln@video-sonic.com`, while `salesandproduction@video-sonic.com` only appeared as *displayed contact text*, not as the form's actual destination. Since the live site's own routing looked like it could be a legacy misconfiguration rather than a deliberate split, and your instruction is explicit ("Primary inquiry destination: salesandproduction@... Do NOT automatically send every inquiry to both addresses unless the existing configuration clearly indicates that is intended" — it didn't clearly indicate that), the new site:
-- Routes the quote-request form to `salesandproduction@video-sonic.com` only (once the key is set).
-- Displays `technicaln@video-sonic.com` as a separate **"Technical Support"** contact line on `/contact/`, preserved and visible, but not wired to the form.
+The form's actual submission destination is **`marketingnsales18@gmail.com`** — an internal routing address, not shown anywhere on the page. Per your explicit instruction, every email address visible on the frontend (`salesandproduction@video-sonic.com` in the footer/contact card, `technicaln@video-sonic.com` as the separate "Technical Support" line) stays exactly as displayed and unchanged; only what happens when a visitor clicks **Send Request** was rerouted. Neither displayed email is wired to the form itself — they remain informational/direct-contact options alongside it.
+
+(Earlier version of this doc had the form routing to `salesandproduction@video-sonic.com` to match what's displayed — that's been superseded by this instruction. See git history for that reasoning if useful context.)
 
 ## Spam protection
 - Honeypot field (`botcheck`, visually hidden via `.honeypot-field`, `tabindex="-1"`, `autocomplete="off"`) — bots that fill every field trip it; the JS silently drops the submission.
