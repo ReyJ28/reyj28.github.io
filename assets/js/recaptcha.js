@@ -11,7 +11,7 @@
 // reCAPTCHA check entirely so the form keeps working via the honeypot
 // field alone. See CONTACT_FORM_ARCHITECTURE.md for activation steps.
 (function () {
-  var RECAPTCHA_SITE_KEY = 'REPLACE_WITH_RECAPTCHA_SITE_KEY';
+  var RECAPTCHA_SITE_KEY = '6LfpjX4tAAAAANvQs2tNC1HRBGgIu1NAvDc5em5U';
   var container = document.getElementById('recaptcha-container');
   if (!container) return;
 

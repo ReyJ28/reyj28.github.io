@@ -25,20 +25,14 @@ The form's actual submission destination is **`marketingnsales18@gmail.com`** �
 ### Honeypot (active)
 `botcheck`, visually hidden via `.honeypot-field`, `tabindex="-1"`, `autocomplete="off"` — bots that fill every field trip it; the JS silently drops the submission.
 
-### reCAPTCHA v2 — built, not yet activated
-`assets/js/recaptcha.js` implements a Google reCAPTCHA v2 ("I'm not a robot" checkbox) widget in the form, but is currently **dormant**:
-```js
-var RECAPTCHA_SITE_KEY = 'REPLACE_WITH_RECAPTCHA_SITE_KEY';
-```
-With that placeholder in place, no widget renders, no external Google script loads, and `contact-form.js` skips the reCAPTCHA check entirely — the form keeps working exactly as it did before (honeypot only). Verified: with the placeholder key, `window.__recaptchaActive` is `false`, the `#recaptcha-container` div stays empty, and a full test submission still succeeds.
+### reCAPTCHA v2 — ACTIVATED
+`assets/js/recaptcha.js` has a real Google reCAPTCHA v2 site key (`6LfpjX4tAAAAANvQs2tNC1HRBGgIu1NAvDc5em5U`), provided by the owner. The widget now renders inside the `/contact/` form.
 
-**I cannot generate the site key myself** — it requires your Google account. To activate:
-1. Go to [google.com/recaptcha/admin](https://www.google.com/recaptcha/admin), create a new site, choose **reCAPTCHA v2 → "I'm not a robot" Checkbox**, and add the domain `video-sonic.com` (and `www.video-sonic.com`).
-2. You'll get two keys: a **site key** (public) and a **secret key** (private).
-3. Enter the **secret key** into your Web3Forms dashboard settings (this is what actually validates the captcha server-side when a submission comes in — Web3Forms supports this natively).
-4. Give me the **site key** — I'll drop it into `assets/js/recaptcha.js`, verify the widget renders and blocks empty-captcha submissions, and deploy.
+Verified live in the browser (not just a code review): `window.__recaptchaActive` is `true`, the Google reCAPTCHA script loads, a real checkbox iframe renders inside `#recaptcha-container`, and submitting the form without completing the checkbox is correctly blocked with an inline message ("Please complete the reCAPTCHA verification before sending.") instead of silently failing or bypassing it. No console errors, no horizontal overflow at 375px with the widget present.
 
-Once active: the widget renders inside the form, a submission is blocked client-side with an inline error until the checkbox is completed, and the token resets automatically after a successful or failed submission so the visitor can retry.
+**Remaining step (on your end):** make sure the matching **secret key** from the same google.com/recaptcha/admin site is entered into your Web3Forms dashboard settings — that's what does the actual server-side verification when a submission comes in. Without it, Web3Forms won't check the token server-side even though the client-side widget is live (defense in depth: the checkbox still stops casual bots either way, but the secret key closes the loop against anyone bypassing the client-side JS directly).
+
+Once fully wired: the widget renders, blocks empty submissions client-side, resets automatically after success/failure so the visitor can retry, and (once the secret key is set) is verified server-side too.
 
 ## Accessibility
 Every field has a real `<label for>` association, the select uses native `<select>` (keyboard/screen-reader friendly), the status region is `aria-live="polite"`, and the whole form was verified to have no horizontal overflow at 375px width.
