@@ -16,7 +16,7 @@
 // invalid so the form fails safely with a clear message + fallback contact
 // details, rather than silently pretending to work.
 (function () {
-  var WEB3FORMS_ACCESS_KEY = 'REPLACE_WITH_WEB3FORMS_ACCESS_KEY';
+  var WEB3FORMS_ACCESS_KEY = '5d6ee20b-fe98-4d8a-a40a-2fc9272978a2';
 
   var form = document.getElementById('quote-form');
   if (!form) return;

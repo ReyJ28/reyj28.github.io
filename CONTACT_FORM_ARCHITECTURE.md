@@ -7,18 +7,13 @@ Implemented per Phase 4/5 approval: **Web3Forms**, client-side only, no backend 
 - Success/error/sending states are shown in a `role="status" aria-live="polite"` element so screen readers announce them.
 - All 11 requested fields are present: Name, Company, Email, Phone, Event Type (select), Event Date (date picker), Venue, Estimated Audience, Services Required (checkbox group, multi-select), Budget, Message.
 
-## The access key — not yet activated (blocking item)
-Web3Forms' architecture requires a **public** access key embedded in client-side code by design — this is not a leaked secret, it's how the service is meant to work (the actual destination inbox is configured on Web3Forms' own dashboard when the key is generated, not controllable from the page). `assets/js/contact-form.js` currently has:
-```js
-var WEB3FORMS_ACCESS_KEY = 'REPLACE_WITH_WEB3FORMS_ACCESS_KEY';
-```
-This is an intentionally-invalid placeholder. **I cannot create the Web3Forms account or generate this key myself** — account creation is outside what I can do on your behalf. Until a real key is substituted, the form fails **safely**: it shows *"This form isn't connected yet. Please email salesandproduction@video-sonic.com or message us on WhatsApp at +63 927 884 5028"* instead of silently pretending to work (verified in the browser — see deployment verification in `PRODUCTION_DEPLOYMENT_REPORT.md`).
+## The access key — ACTIVATED
+`assets/js/contact-form.js` now has a real Web3Forms access key (`5d6ee20b-fe98-4d8a-a40a-2fc9272978a2`), provided by the owner and set to deliver to `marketingnsales18@gmail.com`. Web3Forms' architecture treats this key as **public by design** — it's not a leaked secret, it's how the service is meant to work; the destination inbox was configured on Web3Forms' own dashboard when the key was generated, not by this code.
 
-### To activate (steps for you)
-1. Go to web3forms.com, create a free account, verify **`marketingnsales18@gmail.com`** as the destination inbox when creating the access key (updated per your latest instruction — set once, on their dashboard, not in code).
-2. Copy the generated access key.
-3. Replace `REPLACE_WITH_WEB3FORMS_ACCESS_KEY` in `assets/js/contact-form.js` with the real key, commit, and redeploy.
-4. Optionally enable Web3Forms' built-in spam filtering / reCAPTCHA in their dashboard for extra protection beyond the honeypot already built in.
+Verified working with a live test submission (not just a code review): dispatched a real submit through the deployed form, got back `{"success": true}` from `https://api.web3forms.com/submit`, and the page showed the success state ("Thank you — your inquiry has been sent..."), no console errors. A test email should have arrived at `marketingnsales18@gmail.com` — worth a quick spot-check.
+
+### Optional next step
+Enable Web3Forms' built-in spam filtering / reCAPTCHA in their dashboard for extra protection beyond the honeypot already built into the form.
 
 ## Email routing decision
 The form's actual submission destination is **`marketingnsales18@gmail.com`** — an internal routing address, not shown anywhere on the page. Per your explicit instruction, every email address visible on the frontend (`salesandproduction@video-sonic.com` in the footer/contact card, `technicaln@video-sonic.com` as the separate "Technical Support" line) stays exactly as displayed and unchanged; only what happens when a visitor clicks **Send Request** was rerouted. Neither displayed email is wired to the form itself — they remain informational/direct-contact options alongside it.
@@ -27,7 +22,7 @@ The form's actual submission destination is **`marketingnsales18@gmail.com`** �
 
 ## Spam protection
 - Honeypot field (`botcheck`, visually hidden via `.honeypot-field`, `tabindex="-1"`, `autocomplete="off"`) — bots that fill every field trip it; the JS silently drops the submission.
-- Web3Forms' own dashboard offers additional spam filtering / optional reCAPTCHA once the account exists — not enabled yet since there's no account yet.
+- Web3Forms' own dashboard offers additional spam filtering / optional reCAPTCHA — not yet enabled, see "Optional next step" above.
 
 ## Accessibility
 Every field has a real `<label for>` association, the select uses native `<select>` (keyboard/screen-reader friendly), the status region is `aria-live="polite"`, and the whole form was verified to have no horizontal overflow at 375px width.
