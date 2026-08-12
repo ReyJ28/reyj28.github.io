@@ -139,12 +139,13 @@
         </div>
 
         <div id="calc-ratio-wrap" class="field-row" hidden>
-          <label for="calc-ratio-w">Width ratio
-            <input id="calc-ratio-w" name="ratio_w" class="field" type="number" min="1" step="0.1" placeholder="e.g. 21">
+          <label for="calc-width-ft">Actual Placement Width (feet)
+            <input id="calc-width-ft" name="width_ft" class="field" type="number" min="1" step="0.5" placeholder="e.g. 20">
           </label>
-          <label for="calc-ratio-h">Height ratio
-            <input id="calc-ratio-h" name="ratio_h" class="field" type="number" min="1" step="0.1" placeholder="e.g. 9">
+          <label for="calc-height-ft">Actual Placement Height (feet)
+            <input id="calc-height-ft" name="height_ft" class="field" type="number" min="1" step="0.5" placeholder="e.g. 12">
           </label>
+          <p style="font-size:.82rem;color:var(--text-muted);grid-column:1/-1;margin:-6px 0 0">Already know the exact space available at your venue? Enter it here and we'll size the LED wall to fit, in whole cabinet units.</p>
         </div>
 
         <button class="btn btn-primary calc-submit" type="submit">Calculate My LED Wall Size</button>

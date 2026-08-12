@@ -23,6 +23,17 @@
   var statusEl = document.getElementById('quote-form-status');
   var submitBtn = form.querySelector('[type="submit"]');
 
+  // Show a link to the LED Wall Size Calculator when "LED Walls" is ticked
+  // under Services Required -- helps visitors who aren't sure what size to
+  // ask for before they submit the form.
+  var ledCheckbox = document.getElementById('qf-service-led');
+  var ledSizeHint = document.getElementById('qf-led-size-hint');
+  if (ledCheckbox && ledSizeHint) {
+    ledCheckbox.addEventListener('change', function () {
+      ledSizeHint.hidden = !ledCheckbox.checked;
+    });
+  }
+
   function setStatus(text, kind) {
     statusEl.textContent = text;
     statusEl.className = 'form-status' + (kind ? ' form-status--' + kind : '');

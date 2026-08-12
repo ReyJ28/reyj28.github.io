@@ -111,7 +111,7 @@
           <div>
             <span style="font-size:.85rem;color:var(--text-muted)">Services Required</span>
             <div class="checkbox-group">
-              <label class="checkbox-item"><input type="checkbox" name="services_required" value="LED Walls">LED Walls</label>
+              <label class="checkbox-item"><input id="qf-service-led" type="checkbox" name="services_required" value="LED Walls">LED Walls</label>
               <label class="checkbox-item"><input type="checkbox" name="services_required" value="Projection">Projection</label>
               <label class="checkbox-item"><input type="checkbox" name="services_required" value="Sound">Sound</label>
               <label class="checkbox-item"><input type="checkbox" name="services_required" value="Lights">Lights</label>
@@ -120,6 +120,7 @@
               <label class="checkbox-item"><input type="checkbox" name="services_required" value="Rigging">Rigging</label>
               <label class="checkbox-item"><input type="checkbox" name="services_required" value="Technical Production">Technical Production</label>
             </div>
+            <a id="qf-led-size-hint" class="tag" href="/led-wall/size-guide/" target="_blank" rel="noopener" style="display:inline-flex;margin-top:12px" hidden>Not sure what size LED wall you need? Calculate My LED Wall Size →</a>
           </div>
           <label for="qf-budget">Budget<input id="qf-budget" name="budget" class="field" type="text" placeholder="Approximate range"></label>
           <label for="qf-message">Message<textarea id="qf-message" name="message" class="field" rows="4" required></textarea></label>

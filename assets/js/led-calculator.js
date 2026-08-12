@@ -32,7 +32,8 @@ window.LEDCalculator = (function () {
     '16:9': 16 / 9,
     '4:3': 4 / 3,
     'ultra-wide': 21 / 9,
-    // 'custom' is resolved from user-supplied width/height at call time.
+    // 'custom' isn't in this map -- it means the caller supplied an actual
+    // placement size in feet (customWidthFt/customHeightFt), not a ratio.
   };
 
   // Rounding increment for the estimate (meters), matched to VideoSonic's
@@ -68,12 +69,11 @@ window.LEDCalculator = (function () {
     return 0; // no special floor for smaller audiences
   }
 
-  function resolveAspectRatio(screenShape, customRatio) {
-    if (screenShape === 'custom' && customRatio && customRatio > 0) {
-      return customRatio;
-    }
+  function resolveAspectRatio(screenShape) {
     return ASPECT_RATIOS[screenShape] || ASPECT_RATIOS['16:9'];
   }
+
+  var FEET_TO_METERS = 0.3048;
 
   function viewingSuitabilityText(distanceM, contentKey, heightM) {
     var contentLabel = (CONTENT_FACTORS[contentKey] || CONTENT_FACTORS.mixed).label;
@@ -95,7 +95,8 @@ window.LEDCalculator = (function () {
    * @param {number} input.viewingDistanceM
    * @param {string} input.contentType - key into CONTENT_FACTORS
    * @param {string} input.screenShape - '16:9' | '4:3' | 'ultra-wide' | 'custom'
-   * @param {number} [input.customAspectRatio] - width/height, required if screenShape === 'custom'
+   * @param {number} [input.customWidthFt] - actual placement width in feet, required if screenShape === 'custom'
+   * @param {number} [input.customHeightFt] - actual placement height in feet, required if screenShape === 'custom'
    * @param {Object} [equipmentData] - from data/led-equipment.json
    * @returns {Object} result
    */
@@ -104,6 +105,7 @@ window.LEDCalculator = (function () {
 
     var distance = Number(input.viewingDistanceM);
     var audience = Number(input.audienceSize);
+    var isCustomSize = input.screenShape === 'custom';
 
     if (!isFinite(distance) || distance <= 0) {
       errors.push('Enter a viewing distance greater than 0.');
@@ -111,8 +113,11 @@ window.LEDCalculator = (function () {
     if (!isFinite(audience) || audience < 0) {
       errors.push('Enter a valid audience size.');
     }
-    if (input.screenShape === 'custom' && (!input.customAspectRatio || input.customAspectRatio <= 0)) {
-      errors.push('Enter a valid custom aspect ratio (e.g. width ÷ height).');
+    if (isCustomSize && (!input.customWidthFt || input.customWidthFt <= 0)) {
+      errors.push('Enter a valid placement width in feet.');
+    }
+    if (isCustomSize && (!input.customHeightFt || input.customHeightFt <= 0)) {
+      errors.push('Enter a valid placement height in feet.');
     }
     if (!CONTENT_FACTORS[input.contentType]) {
       errors.push('Select a content type.');
@@ -125,22 +130,39 @@ window.LEDCalculator = (function () {
     var distanceClamped = clamp(distance, MIN_DISTANCE_M, MAX_DISTANCE_M);
     var outOfRange = distanceClamped !== distance;
 
-    var contentFactor = CONTENT_FACTORS[input.contentType].factor;
-    var rawHeight = distanceClamped / contentFactor;
-    var heightM = round(clamp(rawHeight, MIN_HEIGHT_M, MAX_HEIGHT_M), ROUNDING_INCREMENT_M);
+    var widthM, heightM, aspectRatio, audienceAdjusted = false;
 
-    var aspectRatio = resolveAspectRatio(input.screenShape, input.customAspectRatio);
-    var widthM = round(heightM * aspectRatio, ROUNDING_INCREMENT_M);
+    if (isCustomSize) {
+      // "Custom" means the actual physical placement is already known
+      // (a fixed stage backdrop, DJ booth, architectural opening, etc.) --
+      // convert that directly to meters and snap to the cabinet grid,
+      // rather than deriving a size from viewing distance/content. The
+      // audience-driven width floor doesn't apply here either: a known
+      // physical constraint overrides a general sightline heuristic.
+      widthM = round(Number(input.customWidthFt) * FEET_TO_METERS, ROUNDING_INCREMENT_M);
+      heightM = round(Number(input.customHeightFt) * FEET_TO_METERS, ROUNDING_INCREMENT_M);
+      widthM = Math.max(widthM, ROUNDING_INCREMENT_M);
+      heightM = Math.max(heightM, ROUNDING_INCREMENT_M);
+      aspectRatio = widthM / heightM;
+    } else {
+      var contentFactor = CONTENT_FACTORS[input.contentType].factor;
+      var rawHeight = distanceClamped / contentFactor;
+      heightM = round(clamp(rawHeight, MIN_HEIGHT_M, MAX_HEIGHT_M), ROUNDING_INCREMENT_M);
 
-    var widthFloor = audienceWidthFloorM(audience);
-    var audienceAdjusted = false;
-    if (widthFloor > widthM) {
-      widthM = round(widthFloor, ROUNDING_INCREMENT_M);
-      heightM = round(widthM / aspectRatio, ROUNDING_INCREMENT_M);
-      audienceAdjusted = true;
+      aspectRatio = resolveAspectRatio(input.screenShape);
+      widthM = round(heightM * aspectRatio, ROUNDING_INCREMENT_M);
+
+      var widthFloor = audienceWidthFloorM(audience);
+      if (widthFloor > widthM) {
+        widthM = round(widthFloor, ROUNDING_INCREMENT_M);
+        heightM = round(widthM / aspectRatio, ROUNDING_INCREMENT_M);
+        audienceAdjusted = true;
+      }
     }
 
     var areaM2 = Math.round(widthM * heightM * 100) / 100;
+    var panelsWide = Math.round(widthM / ROUNDING_INCREMENT_M);
+    var panelsHigh = Math.round(heightM / ROUNDING_INCREMENT_M);
 
     // Pixel pitch: only ever computed if verified equipment data is
     // supplied and marked verified -- otherwise always the honest
@@ -175,7 +197,10 @@ window.LEDCalculator = (function () {
       widthM: widthM,
       heightM: heightM,
       areaM2: areaM2,
-      aspectRatioLabel: input.screenShape === 'custom' ? widthM.toFixed(2) + ':' + heightM.toFixed(2) : input.screenShape,
+      panelsWide: panelsWide,
+      panelsHigh: panelsHigh,
+      isCustomSize: isCustomSize,
+      aspectRatioLabel: isCustomSize ? 'Actual placement (' + widthM.toFixed(2) + ':' + heightM.toFixed(2) + ')' : input.screenShape,
       aspectRatioDecimal: aspectRatio,
       pixelPitch: pixelPitch,
       standardConfig: standardConfig,
