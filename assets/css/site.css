@@ -3,6 +3,12 @@
 
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* The HTML `hidden` attribute must always win over any display:grid/flex
+   utility class applied to the same element (e.g. .field-row) -- without
+   this, elements like #calc-ratio-wrap stay visibly rendered even while
+   hidden=true, since a matching class selector otherwise outranks the
+   browser's default [hidden]{display:none} UA rule. */
+[hidden]{display:none !important}
 body{
   margin:0;
   background:var(--bg);
