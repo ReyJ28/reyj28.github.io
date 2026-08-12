@@ -3,7 +3,7 @@ const path = require('path');
 const ROOT = path.dirname(__dirname);
 
 const PAGES = [
-  '/', '/led-wall/', '/services/', '/services/projection/', '/services/sound/',
+  '/', '/led-wall/', '/led-wall/size-guide/', '/services/', '/services/projection/', '/services/sound/',
   '/services/lights/', '/services/live-streaming/', '/services/multimedia-consoles/',
   '/services/rigging/', '/services/technical-production/', '/projects/',
   '/projects/rcbc-wealth-dinner/', '/projects/fiba-world-cup-2023/', '/projects/miss-world-2018/',

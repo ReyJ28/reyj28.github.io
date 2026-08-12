@@ -221,3 +221,56 @@ body{padding-bottom:56px}
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
 .reveal.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
+/* LED Wall Size Calculator */
+.calc-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:32px 24px;
+}
+@media(min-width:720px){.calc-card{padding:40px}}
+.calc-form{display:flex;flex-direction:column;gap:18px}
+.calc-form .field-row{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:640px){.calc-form .field-row{grid-template-columns:1fr 1fr}}
+.calc-form select.field,.calc-form input.field{min-height:48px}
+.calc-submit{margin-top:8px}
+.calc-errors{
+  list-style:disc;padding-left:20px;margin:16px 0 0;color:var(--accent-warm);
+  font-size:.92rem;
+}
+.calc-errors:empty{display:none}
+
+.calc-result{
+  margin-top:32px;padding:32px 24px;border-radius:var(--radius-lg);
+  background:linear-gradient(160deg,var(--bg-elevated),var(--surface));
+  border:1px solid var(--accent);box-shadow:var(--shadow-glow);
+  scroll-margin-top:100px;
+}
+@media(min-width:720px){.calc-result{padding:40px}}
+.calc-result__dims{
+  font-family:var(--font-display);font-weight:700;
+  font-size:clamp(2.2rem,6vw,3.5rem);line-height:1;margin:10px 0 16px;color:var(--accent-strong);
+}
+.calc-result__meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.calc-result__suitability{font-size:1.05rem;max-width:60ch}
+.calc-result__note{margin-top:8px}
+.calc-disclaimer{
+  margin-top:20px;padding:16px 18px;border-radius:var(--radius);
+  background:var(--bg);border:1px solid var(--border);
+  font-size:.85rem;color:var(--text-muted);line-height:1.6;
+}
+.calc-cta{margin-top:28px;padding-top:24px;border-top:1px solid var(--border)}
+.calc-cta h3{margin-bottom:6px}
+.calc-cta p{color:var(--text-muted)}
+
+.guide-steps{counter-reset:guide-step}
+.guide-step{
+  position:relative;padding-left:52px;margin-bottom:28px;
+}
+.guide-step::before{
+  counter-increment:guide-step;content:counter(guide-step);
+  position:absolute;left:0;top:0;width:36px;height:36px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--accent);color:var(--accent-strong);
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;
+}
+.guide-step h3{margin-bottom:6px}
+.guide-step p{color:var(--text-muted);margin:0}

@@ -7,7 +7,8 @@
     "short_desc": "High-impact LED display systems for stages, sets, and brand environments.",
     "icon": "/images/icons/ci-1.png",
     "is_primary": true,
-    "status": "verified"
+    "status": "verified",
+    "extraLink": { "label": "Try the Size Calculator", "href": "/led-wall/size-guide/" }
   },
   {
     "id": "projection",

@@ -1,0 +1,5 @@
+{
+  "verified": false,
+  "note": "No VideoSonic pixel-pitch/equipment inventory has been verified yet. pixelPitchOptions stays empty and 'verified' stays false until real specs are supplied -- assets/js/led-calculator.js checks this flag and will only ever compute a pixel-pitch recommendation when it is true. Populate pixelPitchOptions like: { \"name\": \"P2.6 Indoor\", \"pitchMm\": 2.6, \"minViewingDistanceM\": 2.6, \"environment\": \"indoor\" } once confirmed.",
+  "pixelPitchOptions": []
+}

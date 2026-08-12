@@ -22,7 +22,19 @@
       "h1Count": 1,
       "canonical": "https://www.video-sonic.com/led-wall/",
       "robots": "index, follow",
-      "internalLinkCount": 38
+      "internalLinkCount": 39
+    },
+    {
+      "route": "/led-wall/size-guide/",
+      "file": "C:\\Users\\VIDEOSONIC\\Desktop\\Claude\\Sessions\\reyj28.github.io\\led-wall\\size-guide\\index.html",
+      "exists": true,
+      "issues": [],
+      "title": "LED Wall Size Calculator & Guide Philippines | VideoSonic",
+      "description": "Free LED wall size calculator: estimate LED screen dimensions, aspect ratio and viewing suitability for your event based on viewing distance, audience size and content type. VideoSonic, Philippines.",
+      "h1Count": 1,
+      "canonical": "https://www.video-sonic.com/led-wall/size-guide/",
+      "robots": "index, follow",
+      "internalLinkCount": 37
     },
     {
       "route": "/services/",

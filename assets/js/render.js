@@ -37,6 +37,18 @@
   if(servicesGrid){
     fetchJSON('/data/services.json').then(function(items){
       servicesGrid.innerHTML = items.map(function(s){
+        // Cards with an extraLink can't be a single <a> (would need a
+        // nested anchor for the extra link), so render those as a <div>
+        // with the title linked, plus a small secondary link below.
+        if(s.extraLink){
+          return '' +
+          '<div class="card reveal'+(s.is_primary ? ' card--primary' : '')+'">' +
+            '<img class="card__icon" src="'+s.icon+'" width="40" height="40" alt="" aria-hidden="true" loading="lazy">' +
+            '<h3><a href="'+s.path+'">'+s.name+'</a>'+(s.is_primary ? ' <span class="tag">Primary</span>' : '')+'</h3>' +
+            '<p>'+s.short_desc+'</p>' +
+            '<div class="tag-row"><a class="tag" href="'+s.extraLink.href+'">'+s.extraLink.label+' →</a></div>' +
+          '</div>';
+        }
         return '' +
         '<a class="card reveal'+(s.is_primary ? ' card--primary' : '')+'" href="'+s.path+'">' +
           '<img class="card__icon" src="'+s.icon+'" width="40" height="40" alt="" aria-hidden="true" loading="lazy">' +
