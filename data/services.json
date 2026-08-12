@@ -8,7 +8,7 @@
     "icon": "/images/icons/ci-1.png",
     "is_primary": true,
     "status": "verified",
-    "extraLink": { "label": "Try the Size Calculator", "href": "/led-wall/size-guide/" }
+    "extraLink": { "label": "Try the LED Wall Calculator", "href": "/led-wall/size-guide/" }
   },
   {
     "id": "projection",
