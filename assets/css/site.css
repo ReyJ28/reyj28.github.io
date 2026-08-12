@@ -81,20 +81,30 @@ h3{font-size:clamp(1.2rem,2.4vw,1.5rem)}
   backdrop-filter:blur(10px);
   border-bottom:1px solid var(--border);
 }
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px}
-.nav__logo img{height:34px;width:auto}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px}
+.nav__logo{flex-shrink:0}
+.nav__logo img{height:26px;width:auto}
 .nav__links{display:none;gap:28px;align-items:center}
 .nav__links a{font-size:.92rem;font-weight:500;color:var(--text-muted);transition:color .15s}
 .nav__links a:hover,.nav__links a.active{color:var(--text)}
-.nav__actions{display:flex;align-items:center;gap:14px}
+.nav__actions{display:flex;align-items:center;gap:10px}
+/* The "Log In" pill is dropped below 960px so Logo + primary CTA +
+   menu toggle always fit without pushing the logo off-screen -- it's
+   still reachable from the mobile dropdown panel. */
+.nav__actions .btn-outline{display:none}
+.nav__actions .btn-primary{padding:11px 16px;font-size:.85rem}
 .nav__toggle{
   background:none;border:1px solid var(--border);color:var(--text);
   border-radius:8px;padding:8px 12px;font-size:1rem;cursor:pointer;
 }
 @media(min-width:960px){
   .nav{padding:18px 40px}
+  .nav__logo img{height:34px}
   .nav__links{display:flex}
   .nav__toggle{display:none}
+  .nav__actions{gap:14px}
+  .nav__actions .btn-outline{display:inline-flex}
+  .nav__actions .btn-primary{padding:13px 24px;font-size:.92rem}
 }
 .mobile-panel{display:none;flex-direction:column;gap:2px;padding:8px 24px 20px;border-bottom:1px solid var(--border)}
 .mobile-panel.open{display:flex}
