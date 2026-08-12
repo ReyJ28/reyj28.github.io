@@ -160,6 +160,16 @@ window.LEDCalculator = (function () {
       }
     }
 
+    // Standard configuration: if a verified, ready-built VideoSonic
+    // configuration exists for the chosen aspect ratio, surface it as a
+    // reference point alongside the estimate -- not a substitute for it.
+    var standardConfig = null;
+    if (equipmentData && equipmentData.verified && Array.isArray(equipmentData.pixelPitchOptions)) {
+      standardConfig = equipmentData.pixelPitchOptions.find(function (opt) {
+        return opt.aspectRatioLabel === input.screenShape && opt.widthM && opt.heightM;
+      }) || null;
+    }
+
     return {
       valid: true,
       widthM: widthM,
@@ -168,6 +178,7 @@ window.LEDCalculator = (function () {
       aspectRatioLabel: input.screenShape === 'custom' ? widthM.toFixed(2) + ':' + heightM.toFixed(2) : input.screenShape,
       aspectRatioDecimal: aspectRatio,
       pixelPitch: pixelPitch,
+      standardConfig: standardConfig,
       suitabilityText: viewingSuitabilityText(distanceClamped, input.contentType, heightM),
       audienceAdjusted: audienceAdjusted,
       outOfRange: outOfRange,

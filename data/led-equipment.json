@@ -1,5 +1,16 @@
 {
-  "verified": false,
-  "note": "No VideoSonic pixel-pitch/equipment inventory has been verified yet. pixelPitchOptions stays empty and 'verified' stays false until real specs are supplied -- assets/js/led-calculator.js checks this flag and will only ever compute a pixel-pitch recommendation when it is true. Populate pixelPitchOptions like: { \"name\": \"P2.6 Indoor\", \"pitchMm\": 2.6, \"minViewingDistanceM\": 2.6, \"environment\": \"indoor\" } once confirmed.",
-  "pixelPitchOptions": []
+  "verified": true,
+  "note": "Verified by the owner. pixelPitchOptions currently has one confirmed configuration -- VideoSonic's standard 16:9 build (P3.9, 9 columns x 5 rows of 0.5m x 0.5m cabinets = 4.5m x 2.5m). Add further confirmed configurations (other pitches, aspect ratios, indoor/outdoor variants) as entries in the same shape when verified.",
+  "pixelPitchOptions": [
+    {
+      "name": "P3.9 Standard 16:9",
+      "pitchMm": 3.9,
+      "minViewingDistanceM": 3.9,
+      "cabinetsWide": 9,
+      "cabinetsHigh": 5,
+      "widthM": 4.5,
+      "heightM": 2.5,
+      "aspectRatioLabel": "16:9"
+    }
+  ]
 }

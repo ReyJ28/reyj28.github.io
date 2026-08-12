@@ -54,6 +54,9 @@
     if (r.outOfRange) {
       notes.push('Your viewing distance is unusually large or small for this quick estimate — for ' + eventTypeLabel.toLowerCase() + ' at this scale, please talk to our technical team directly for an accurate plan.');
     }
+    if (r.standardConfig) {
+      notes.push('For reference: VideoSonic\'s standard ' + r.standardConfig.aspectRatioLabel + ' configuration is ' + r.standardConfig.widthM.toFixed(1) + 'm × ' + r.standardConfig.heightM.toFixed(1) + 'm (' + r.standardConfig.cabinetsWide + '×' + r.standardConfig.cabinetsHigh + ' cabinets, ' + r.standardConfig.pitchMm + 'mm pixel pitch) — your estimate may be built up or down from this using the same cabinet modules.');
+    }
 
     resultEl.innerHTML =
       '<span class="eyebrow">Your Estimated LED Wall</span>' +
@@ -65,7 +68,7 @@
         '<span class="tag">' + r.pixelPitch.label + '</span>' +
       '</div>' +
       '<p class="calc-result__suitability">Recommended for your estimated viewing conditions. ' + r.suitabilityText + '</p>' +
-      (notes.length ? '<p class="calc-result__note placeholder">' + notes.join(' ') + '</p>' : '') +
+      (notes.length ? '<p class="calc-result__note">' + notes.join(' ') + '</p>' : '') +
       '<div class="calc-disclaimer">' +
         '<strong>Planning estimate only.</strong> LED wall size and pixel pitch recommendations depend on venue dimensions, viewing distance, content requirements, camera requirements, stage design and available equipment. Final specifications should be confirmed by the VideoSonic technical production team.' +
       '</div>' +

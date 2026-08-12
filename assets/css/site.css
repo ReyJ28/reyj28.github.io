@@ -252,7 +252,7 @@ body{padding-bottom:56px}
 }
 .calc-result__meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 .calc-result__suitability{font-size:1.05rem;max-width:60ch}
-.calc-result__note{margin-top:8px}
+.calc-result__note{margin-top:8px;color:var(--text-muted);font-size:.9rem}
 .calc-disclaimer{
   margin-top:20px;padding:16px 18px;border-radius:var(--radius);
   background:var(--bg);border:1px solid var(--border);
