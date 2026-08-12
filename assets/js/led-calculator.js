@@ -35,11 +35,11 @@ window.LEDCalculator = (function () {
     // 'custom' is resolved from user-supplied width/height at call time.
   };
 
-  // Practical rounding increment for the estimate (meters). Real LED
-  // installations are built from fixed cabinet/module sizes -- we don't
-  // claim to know VideoSonic's actual module dimensions, so we round to a
-  // generic planning increment instead of a real product grid.
-  var ROUNDING_INCREMENT_M = 0.25;
+  // Rounding increment for the estimate (meters), matched to VideoSonic's
+  // verified standard LED cabinet module size (0.5m x 0.5m) -- real walls
+  // are built from a whole number of these, so results are snapped to the
+  // same grid rather than an arbitrary planning increment.
+  var ROUNDING_INCREMENT_M = 0.5;
 
   // Sane bounds so extreme inputs don't produce a nonsensical result.
   var MIN_HEIGHT_M = 1.0;

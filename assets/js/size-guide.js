@@ -58,6 +58,7 @@
     resultEl.innerHTML =
       '<span class="eyebrow">Your Estimated LED Wall</span>' +
       '<div class="calc-result__dims">' + r.widthM.toFixed(2) + 'm × ' + r.heightM.toFixed(2) + 'm</div>' +
+      '<p style="color:var(--text-muted);font-size:.85rem;margin-top:-10px">Sized in whole 0.5m × 0.5m LED cabinet units, matching VideoSonic\'s standard modular build.</p>' +
       '<div class="calc-result__meta">' +
         '<span class="tag">' + r.aspectRatioLabel + '</span>' +
         '<span class="tag">' + r.areaM2.toFixed(2) + ' m²</span>' +
