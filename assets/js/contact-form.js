@@ -22,6 +22,18 @@
   if (!form) return;
   var statusEl = document.getElementById('quote-form-status');
   var submitBtn = form.querySelector('[type="submit"]');
+  var track = window.VSAnalytics ? window.VSAnalytics.trackEvent : function () {};
+  var FORM_NAME = 'quote_request';
+  var FORM_LOCATION = 'contact_page';
+
+  // Fires once, on the visitor's first interaction with any field.
+  var startTracked = false;
+  form.addEventListener('focusin', function () {
+    if (startTracked) return;
+    startTracked = true;
+    track('form_start', { form_name: FORM_NAME, form_location: FORM_LOCATION });
+    track('quote_request_start', { form_name: FORM_NAME, form_location: FORM_LOCATION });
+  });
 
   // Show a link to the LED Wall Size Calculator when "LED Walls" is ticked
   // under Services Required -- helps visitors who aren't sure what size to
@@ -56,6 +68,8 @@
         'This form isn’t connected yet. Please email salesandproduction@video-sonic.com or message us on WhatsApp at +63 927 884 5028 and we’ll follow up.',
         'error'
       );
+      track('form_error', { form_name: FORM_NAME, form_location: FORM_LOCATION });
+      track('quote_request_error', { form_name: FORM_NAME, form_location: FORM_LOCATION });
       return;
     }
 
@@ -66,6 +80,8 @@
 
     submitBtn.disabled = true;
     setStatus('Sending your request…');
+    track('form_submit', { form_name: FORM_NAME, form_location: FORM_LOCATION });
+    track('quote_request_submit', { form_name: FORM_NAME, form_location: FORM_LOCATION });
 
     fetch('https://api.web3forms.com/submit', {
       method: 'POST',
@@ -77,6 +93,7 @@
         if (json.success) {
           setStatus('Thank you — your inquiry has been sent. We’ll follow up shortly.', 'success');
           form.reset();
+          track('quote_request_success', { form_name: FORM_NAME, form_location: FORM_LOCATION });
         } else {
           throw new Error(json.message || 'Submission failed');
         }
@@ -86,6 +103,8 @@
           'Something went wrong sending your inquiry. Please email salesandproduction@video-sonic.com directly.',
           'error'
         );
+        track('form_error', { form_name: FORM_NAME, form_location: FORM_LOCATION });
+        track('quote_request_error', { form_name: FORM_NAME, form_location: FORM_LOCATION });
       })
       .finally(function () {
         submitBtn.disabled = false;

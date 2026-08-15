@@ -8,7 +8,7 @@ function cta(title = "Ready to plan your event?", sub = "Tell us your event date
       <span class="eyebrow">Get Started</span>
       <h2>${title}</h2>
       <p class="lede center" style="margin:0 auto">${sub}</p>
-      <div class="cta-band__actions"><a class="btn btn-primary" href="/contact/">Request a Quote</a></div>
+      <div class="cta-band__actions"><a class="btn btn-primary" href="/contact/" data-cta-name="request_quote_band" data-cta-location="cta_band">Request a Quote</a></div>
     </div>
   </div>
 </section>`;

@@ -9,6 +9,15 @@
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- ANALYTICS_HEAD_START -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R33XQ0JSHB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-R33XQ0JSHB');
+</script>
+<!-- ANALYTICS_HEAD_END -->
 <link rel="stylesheet" href="/assets/css/site.css">
 </head>
 <body>
@@ -26,7 +35,7 @@
         <a href="/contact/">Contact</a>
       </div>
       <div class="nav__actions">
-        <a class="btn btn-primary" href="/contact/">Request a LED Quote</a>
+        <a class="btn btn-primary" href="/contact/" data-cta-name="request_led_quote" data-cta-location="nav">Request a LED Quote</a>
       </div>
     </nav>
   </div>
@@ -38,13 +47,14 @@
     <h1>Page not found</h1>
     <p class="lede" style="margin:0 auto 32px">The page you're looking for doesn't exist or has moved.</p>
     <div class="hero__ctas" style="justify-content:center">
-      <a class="btn btn-primary" href="/">Back to Home</a>
-      <a class="btn btn-outline" href="/led-wall/">LED Walls</a>
-      <a class="btn btn-outline" href="/contact/">Contact Us</a>
+      <a class="btn btn-primary" href="/" data-cta-name="back_to_home" data-cta-location="404_page">Back to Home</a>
+      <a class="btn btn-outline" href="/led-wall/" data-cta-name="led_walls" data-cta-location="404_page">LED Walls</a>
+      <a class="btn btn-outline" href="/contact/" data-cta-name="contact_us" data-cta-location="404_page">Contact Us</a>
     </div>
   </div>
 </section>
 </main>
 <script src="/assets/js/site.js"></script>
+<script src="/assets/js/analytics.js"></script>
 </body>
 </html>

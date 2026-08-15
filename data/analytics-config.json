@@ -1,0 +1,5 @@
+{
+  "GA4_MEASUREMENT_ID": "G-R33XQ0JSHB",
+  "GOOGLE_SITE_VERIFICATION": "",
+  "_comment": "GOOGLE_SITE_VERIFICATION is intentionally empty until a real Search Console token is provided -- no fake token. Read at build time by _build/analytics-head.js (via _build/gen.js) to decide whether to emit the GA4 tag / Search Console meta tag at all. Empty = not emitted, no console errors, no placeholder scripts. See ANALYTICS_IMPLEMENTATION.md for exactly how to fill these in and rebuild."
+}

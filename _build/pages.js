@@ -11,7 +11,7 @@ function cta(title = "Ready to plan your event?", sub = "Tell us your event date
       <h2>${title}</h2>
       <p class="lede center" style="margin:0 auto">${sub}</p>
       <div class="cta-band__actions">
-        <a class="btn btn-primary" href="/contact/">Request a Quote</a>
+        <a class="btn btn-primary" href="/contact/" data-cta-name="request_quote_band" data-cta-location="cta_band">Request a Quote</a>
       </div>
     </div>
   </div>
@@ -116,7 +116,7 @@ for (const [slug, d] of Object.entries(SERVICE_DETAIL)) {
       <span class="eyebrow">Services</span>
       <h1>${d.title}</h1>
       <p class="lede">${d.desc}</p>
-      <div class="hero__ctas"><a class="btn btn-primary" href="/contact/">Request a Quote</a></div>
+      <div class="hero__ctas"><a class="btn btn-primary" href="/contact/" data-cta-name="request_quote_hero" data-cta-location="service_hero">Request a Quote</a></div>
     </div>
   </div>
 </section>`;

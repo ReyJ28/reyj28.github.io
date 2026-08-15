@@ -46,7 +46,7 @@
             '<img class="card__icon" src="'+s.icon+'" width="40" height="40" alt="" aria-hidden="true" loading="lazy">' +
             '<h3><a href="'+s.path+'">'+s.name+'</a>'+(s.is_primary ? ' <span class="tag">Primary</span>' : '')+'</h3>' +
             '<p>'+s.short_desc+'</p>' +
-            '<div class="tag-row"><a class="tag" href="'+s.extraLink.href+'">'+s.extraLink.label+' →</a></div>' +
+            '<div class="tag-row"><a class="tag" href="'+s.extraLink.href+'" data-cta-name="free_led_wall_calculator" data-cta-location="services_grid">'+s.extraLink.label+' →</a></div>' +
           '</div>';
         }
         return '' +

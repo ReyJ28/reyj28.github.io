@@ -15,8 +15,18 @@
   var errorsEl = document.getElementById('calc-errors');
   var resultEl = document.getElementById('calc-result');
   var equipmentData = null;
+  var track = window.VSAnalytics ? window.VSAnalytics.trackEvent : function () {};
+  var CALC_NAME = 'led_wall_calculator';
 
   fetch('/data/led-equipment.json').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
+
+  track('calculator_view', { calculator_name: CALC_NAME });
+  var startTracked = false;
+  form.addEventListener('focusin', function () {
+    if (startTracked) return;
+    startTracked = true;
+    track('calculator_start', { calculator_name: CALC_NAME });
+  });
 
   function toggleAudienceCustom() {
     var isCustom = audiencePreset.value === 'custom';
@@ -99,6 +109,9 @@
     errorsEl.innerHTML = errors.map(function (e) { return '<li>' + e + '</li>'; }).join('');
     errorsEl.hidden = errors.length === 0;
     resultEl.hidden = true;
+    if (errors.length) {
+      track('calculator_error', { calculator_name: CALC_NAME, error_count: errors.length });
+    }
   }
 
   function renderResult(r, eventTypeLabel) {
@@ -133,11 +146,20 @@
         '<h3>Want an exact LED configuration?</h3>' +
         '<p>Send VideoSonic your event requirements and let the technical team prepare the appropriate configuration.</p>' +
         '<div class="hero__ctas">' +
-          '<a class="btn btn-primary" href="/contact/">Request an LED Wall Quote</a>' +
-          '<a class="btn btn-outline" href="https://wa.me/639278845028" target="_blank" rel="noopener">Talk to Our Technical Team</a>' +
+          '<a class="btn btn-primary" data-calc-quote-cta href="/contact/">Request an LED Wall Quote</a>' +
+          '<a class="btn btn-outline" data-calc-quote-cta href="https://wa.me/639278845028" target="_blank" rel="noopener">Talk to Our Technical Team</a>' +
         '</div>' +
       '</div>';
     resultEl.hidden = false;
+    var quoteCtas = resultEl.querySelectorAll('[data-calc-quote-cta]');
+    for (var i = 0; i < quoteCtas.length; i++) {
+      quoteCtas[i].addEventListener('click', function (e) {
+        track('calculator_quote_click', {
+          calculator_name: CALC_NAME,
+          destination: e.currentTarget.getAttribute('href'),
+        });
+      });
+    }
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
@@ -166,6 +188,13 @@
       renderErrors(result.errors);
       return;
     }
+    track('calculator_calculation_complete', {
+      calculator_name: CALC_NAME,
+      calculator_mode: screenShape.value === 'custom' ? 'custom_ratio' : 'preset_ratio',
+      content_type: input.contentType,
+      aspect_ratio: result.aspectRatioLabel,
+      pixel_pitch: result.pixelPitch && result.pixelPitch.label,
+    });
     renderResult(result, eventTypeLabel);
   });
 })();

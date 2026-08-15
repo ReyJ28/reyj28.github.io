@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.dirname(__dirname);
+const { buildAnalyticsHead } = require('./analytics-head');
+const ANALYTICS_HEAD = buildAnalyticsHead();
 
 // Maps a live-site-sourced image path to its optimized webp/jpg pair.
 // Backgrounds get two widths (1920/960) for a simple responsive CSS swap;
@@ -56,7 +58,7 @@ const HEADER = (active) => {
       </div>
       <div class="nav__actions">
         <a class="btn btn-outline" href="https://videosonic-erp-web.vercel.app/login">Log In</a>
-        <a class="btn btn-primary" href="/contact/">Request a LED Quote</a>
+        <a class="btn btn-primary" href="/contact/" data-cta-name="request_led_quote" data-cta-location="nav">Request a LED Quote</a>
         <button class="nav__toggle" data-nav-toggle aria-expanded="false" aria-label="Menu">&#9776;</button>
       </div>
     </nav>
@@ -106,7 +108,6 @@ const FOOTER = `<footer class="site-footer">
         <h4>Connect</h4>
         <ul>
           <li><a href="https://www.facebook.com/videosonicph">Facebook</a></li>
-          <li><a href="https://videosonic-erp-web.vercel.app/login">Client / Partner Log In</a></li>
         </ul>
       </div>
     </div>
@@ -116,9 +117,10 @@ const FOOTER = `<footer class="site-footer">
     </div>
   </div>
 </footer>
-<div class="mobile-cta"><a href="https://wa.me/639278845028" target="_blank" rel="noopener">WhatsApp</a><a class="primary" href="/contact/">Request Quote</a></div>
+<div class="mobile-cta"><a href="https://wa.me/639278845028" target="_blank" rel="noopener">WhatsApp</a><a class="primary" href="/contact/" data-cta-name="request_led_quote" data-cta-location="mobile_sticky_bar">Request Quote</a></div>
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 <script src="/assets/js/site.js"></script>
+<script src="/assets/js/analytics.js"></script>
 `;
 
 // Preserved verbatim from the live site's index.html (teamVanityId/doChat/doTracking
@@ -165,6 +167,11 @@ function page({ route, title, description, canonical, active, heroHtml, bodyHtml
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="${canonical}">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+${ANALYTICS_HEAD}
 ${ogTags}
 <link rel="stylesheet" href="/assets/css/site.css">
 ${extraHead}

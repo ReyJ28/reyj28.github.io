@@ -11,6 +11,13 @@
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R33XQ0JSHB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-R33XQ0JSHB');
+</script>
 <meta property="og:type" content="website">
 <meta property="og:title" content="Event Production Services Philippines | VideoSonic">
 <meta property="og:description" content="VideoSonic's full range of event production services in the Philippines: LED walls, projection, sound, lighting, live streaming, multi-media consoles, rigging and technical production.">
@@ -40,7 +47,7 @@
       </div>
       <div class="nav__actions">
         <a class="btn btn-outline" href="https://videosonic-erp-web.vercel.app/login">Log In</a>
-        <a class="btn btn-primary" href="/contact/">Request a LED Quote</a>
+        <a class="btn btn-primary" href="/contact/" data-cta-name="request_led_quote" data-cta-location="nav">Request a LED Quote</a>
         <button class="nav__toggle" data-nav-toggle aria-expanded="false" aria-label="Menu">&#9776;</button>
       </div>
     </nav>
@@ -128,9 +135,10 @@
     </div>
   </div>
 </footer>
-<div class="mobile-cta"><a href="https://wa.me/639278845028" target="_blank" rel="noopener">WhatsApp</a><a class="primary" href="/contact/">Request Quote</a></div>
+<div class="mobile-cta"><a href="https://wa.me/639278845028" target="_blank" rel="noopener">WhatsApp</a><a class="primary" href="/contact/" data-cta-name="request_led_quote" data-cta-location="mobile_sticky_bar">Request Quote</a></div>
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 <script src="/assets/js/site.js"></script>
+<script src="/assets/js/analytics.js"></script>
 
 <script src="/assets/js/render.js"></script>
 <script src="/assets/js/momentcrm.js"></script>
