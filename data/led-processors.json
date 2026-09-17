@@ -11,7 +11,9 @@
       "portType": "gigabit",
       "models": [
         { "id": "vx4s", "name": "VX4S", "ports": 4 },
+        { "id": "vx1000", "name": "VX1000", "ports": 10 },
         { "id": "mctrl4k", "name": "MCTRL4K", "ports": 16 },
+        { "id": "vx2000", "name": "VX2000 Pro", "ports": 20 },
         { "id": "h-series", "name": "H-Series", "ports": 32 }
       ]
     },

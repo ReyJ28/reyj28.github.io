@@ -287,6 +287,10 @@ body{padding-bottom:56px}
 .calc-diagram__person circle,.calc-diagram__person rect{fill:var(--text-muted);opacity:.55}
 .calc-diagram__ground{stroke:var(--border);stroke-width:1}
 .calc-diagram__caption{margin:14px 0 0;font-size:.82rem;color:var(--text-muted);text-align:center}
+.calc-diagram__legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:12px;font-size:.8rem;color:var(--text-muted)}
+.calc-diagram__legendhead{width:100%;color:var(--text);font-weight:600;font-size:.82rem;margin-bottom:2px}
+.calc-diagram__portchip{display:inline-flex;align-items:center;gap:6px}
+.calc-diagram__portswatch{width:12px;height:12px;border-radius:3px;display:inline-block;flex:none}
 .calc-cta h3{margin-bottom:6px}
 .calc-cta p{color:var(--text-muted)}
 
