@@ -152,13 +152,19 @@
         </div>
 
         <div id="calc-ratio-wrap" class="field-row" hidden>
-          <label for="calc-width-ft">Actual Placement Width (feet)
+          <label for="calc-placement-unit" style="grid-column:1/-1">Measurement Units
+            <select id="calc-placement-unit" name="placement_unit" class="field">
+              <option value="feet" selected>Feet</option>
+              <option value="meters">Meters</option>
+            </select>
+          </label>
+          <label for="calc-width-ft">Actual Placement Width (<span data-unit-label>feet</span>)
             <input id="calc-width-ft" name="width_ft" class="field" type="number" min="1" step="0.5" placeholder="e.g. 20">
           </label>
-          <label for="calc-height-ft">Actual Placement Height (feet)
+          <label for="calc-height-ft">Actual Placement Height (<span data-unit-label>feet</span>)
             <input id="calc-height-ft" name="height_ft" class="field" type="number" min="1" step="0.5" placeholder="e.g. 12">
           </label>
-          <p style="font-size:.82rem;color:var(--text-muted);grid-column:1/-1;margin:-6px 0 0">Already know the exact space available at your venue? Enter it here and we'll size the LED wall to fit, in whole cabinet units.</p>
+          <p style="font-size:.82rem;color:var(--text-muted);grid-column:1/-1;margin:-6px 0 0">Already know the exact space available at your venue? Enter it here in feet or meters and we'll size the LED wall to fit, in whole cabinet units.</p>
         </div>
 
         <button class="btn btn-primary calc-submit" type="submit">Calculate My LED Wall Size</button>

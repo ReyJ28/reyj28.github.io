@@ -95,8 +95,11 @@ window.LEDCalculator = (function () {
    * @param {number} input.viewingDistanceM
    * @param {string} input.contentType - key into CONTENT_FACTORS
    * @param {string} input.screenShape - '16:9' | '4:3' | 'ultra-wide' | 'custom'
-   * @param {number} [input.customWidthFt] - actual placement width in feet, required if screenShape === 'custom'
-   * @param {number} [input.customHeightFt] - actual placement height in feet, required if screenShape === 'custom'
+   * @param {string} [input.customUnit] - 'feet' (default) | 'meters' — unit of the custom placement size
+   * @param {number} [input.customWidth] - actual placement width (in customUnit), required if screenShape === 'custom'
+   * @param {number} [input.customHeight] - actual placement height (in customUnit), required if screenShape === 'custom'
+   * @param {number} [input.customWidthFt] - deprecated alias for customWidth in feet (backward compatibility)
+   * @param {number} [input.customHeightFt] - deprecated alias for customHeight in feet (backward compatibility)
    * @param {Object} [equipmentData] - from data/led-equipment.json
    * @returns {Object} result
    */
@@ -107,17 +110,25 @@ window.LEDCalculator = (function () {
     var audience = Number(input.audienceSize);
     var isCustomSize = input.screenShape === 'custom';
 
+    // Custom placement size may be entered in feet (default) or meters.
+    // customWidth/customHeight are the current field names; customWidthFt/
+    // customHeightFt are kept as a feet-only fallback for older callers.
+    var customUnit = input.customUnit === 'meters' ? 'meters' : 'feet';
+    var unitLabel = customUnit === 'meters' ? 'meters' : 'feet';
+    var customWidth = Number(input.customWidth != null ? input.customWidth : input.customWidthFt);
+    var customHeight = Number(input.customHeight != null ? input.customHeight : input.customHeightFt);
+
     if (!isFinite(distance) || distance <= 0) {
       errors.push('Enter a viewing distance greater than 0.');
     }
     if (!isFinite(audience) || audience < 0) {
       errors.push('Enter a valid audience size.');
     }
-    if (isCustomSize && (!input.customWidthFt || input.customWidthFt <= 0)) {
-      errors.push('Enter a valid placement width in feet.');
+    if (isCustomSize && (!(customWidth > 0))) {
+      errors.push('Enter a valid placement width in ' + unitLabel + '.');
     }
-    if (isCustomSize && (!input.customHeightFt || input.customHeightFt <= 0)) {
-      errors.push('Enter a valid placement height in feet.');
+    if (isCustomSize && (!(customHeight > 0))) {
+      errors.push('Enter a valid placement height in ' + unitLabel + '.');
     }
     if (!CONTENT_FACTORS[input.contentType]) {
       errors.push('Select a content type.');
@@ -139,8 +150,9 @@ window.LEDCalculator = (function () {
       // rather than deriving a size from viewing distance/content. The
       // audience-driven width floor doesn't apply here either: a known
       // physical constraint overrides a general sightline heuristic.
-      widthM = round(Number(input.customWidthFt) * FEET_TO_METERS, ROUNDING_INCREMENT_M);
-      heightM = round(Number(input.customHeightFt) * FEET_TO_METERS, ROUNDING_INCREMENT_M);
+      var toMeters = customUnit === 'meters' ? 1 : FEET_TO_METERS;
+      widthM = round(customWidth * toMeters, ROUNDING_INCREMENT_M);
+      heightM = round(customHeight * toMeters, ROUNDING_INCREMENT_M);
       widthM = Math.max(widthM, ROUNDING_INCREMENT_M);
       heightM = Math.max(heightM, ROUNDING_INCREMENT_M);
       aspectRatio = widthM / heightM;
