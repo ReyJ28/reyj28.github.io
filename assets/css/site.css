@@ -120,7 +120,7 @@ h3{font-size:clamp(1.2rem,2.4vw,1.5rem)}
 }
 .btn-primary{background:var(--accent);color:#04141a}
 .btn-primary:hover{background:var(--accent-strong);box-shadow:var(--shadow-glow)}
-.btn-outline{border-color:var(--border);color:var(--text)}
+.btn-outline{background:transparent;border-color:var(--border);color:var(--text)}
 .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
 .btn-warm{background:var(--accent-warm);color:#1a0500}
 .btn-warm:hover{filter:brightness(1.1)}
