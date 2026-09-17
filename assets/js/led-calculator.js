@@ -48,6 +48,123 @@ window.LEDCalculator = (function () {
   var MIN_DISTANCE_M = 1;
   var MAX_DISTANCE_M = 200;
 
+  // ---------------------------------------------------------------------
+  // GENERAL PLANNING ASSUMPTIONS (NOT VideoSonic hardware specs)
+  // ---------------------------------------------------------------------
+  // Per-panel weight/power/cost below are typical mid-range values for a
+  // 500x500mm indoor cabinet, used only to give a rough planning figure.
+  // They are labelled as general industry assumptions everywhere they are
+  // shown and are NOT a spec sheet for VideoSonic's actual panels. Real
+  // figures depend on the confirmed product and must come from the
+  // technical team. Grouped here so they are easy to tune in one place.
+  var PANEL_SIZE_MM = 500;                 // 0.5m cabinet, matches ROUNDING_INCREMENT_M
+  var PANEL_MAX_WATTS = 260;               // general assumption, max draw
+  var PANEL_AVG_WATTS = 120;               // general assumption, average draw
+  var PANEL_WEIGHT_KG = 8.5;               // general assumption, per cabinet
+  var PANEL_COST_USD = 305;                // general assumption, hardware only, indicative
+
+  // Electrical basis: standard US 120V / 20A branch circuit with the NEC
+  // 80% continuous-load derating (a 20A breaker carries max 16A / ~1920W
+  // continuous). Grouped so a 230V market basis can be swapped in later.
+  var CIRCUIT_VOLTAGE = 120;
+  var CIRCUIT_BREAKER_A = 20;
+  var CIRCUIT_DERATE = 0.8;                // NEC continuous-load rule
+  var CIRCUIT_CONTINUOUS_W = CIRCUIT_VOLTAGE * CIRCUIT_BREAKER_A * CIRCUIT_DERATE; // 1920W
+  var CIRCUIT_CONTINUOUS_A = CIRCUIT_BREAKER_A * CIRCUIT_DERATE; // 16A
+
+  var KG_TO_LB = 2.20462;
+
+  // Builds the derived technical spec set shown in the left "Wall" panel and
+  // used by the power-distribution plan. pitchMm may be null when no verified
+  // pixel pitch applies -- pixel-derived fields then come back null (honest),
+  // never invented.
+  function buildSpecs(dims) {
+    var totalPanels = dims.panelsWide * dims.panelsHigh;
+
+    var panelPxAxis = dims.pitchMm ? Math.round(PANEL_SIZE_MM / dims.pitchMm) : null;
+    var resW = panelPxAxis ? dims.panelsWide * panelPxAxis : null;
+    var resH = panelPxAxis ? dims.panelsHigh * panelPxAxis : null;
+    var totalPixels = (resW && resH) ? resW * resH : null;
+
+    var maxWatts = totalPanels * PANEL_MAX_WATTS;
+    var avgWatts = totalPanels * PANEL_AVG_WATTS;
+
+    // Power distribution on standard 20A/120V circuits (NEC 80% rule).
+    var panelsPerCircuit = Math.max(1, Math.floor(CIRCUIT_CONTINUOUS_W / PANEL_MAX_WATTS)); // 7
+    var circuits = Math.ceil(totalPanels / panelsPerCircuit);
+    var maxCurrentA = maxWatts / CIRCUIT_VOLTAGE;
+
+    var weightKg = totalPanels * PANEL_WEIGHT_KG;
+
+    return {
+      totalPanels: totalPanels,
+      panelPxAxis: panelPxAxis,
+      resW: resW,
+      resH: resH,
+      totalPixels: totalPixels,
+      weightKg: Math.round(weightKg * 10) / 10,
+      weightLb: Math.round(weightKg * KG_TO_LB * 10) / 10,
+      maxWatts: maxWatts,
+      avgWatts: avgWatts,
+      maxKw: Math.round(maxWatts / 1000 * 100) / 100,
+      avgKw: Math.round(avgWatts / 1000 * 100) / 100,
+      maxCurrentA: Math.round(maxCurrentA * 10) / 10,
+      panelsPerCircuit: panelsPerCircuit,
+      circuits: circuits,
+      circuitVoltage: CIRCUIT_VOLTAGE,
+      circuitBreakerA: CIRCUIT_BREAKER_A,
+      circuitContinuousA: CIRCUIT_CONTINUOUS_A,
+      costUsd: Math.round(totalPanels * PANEL_COST_USD),
+      perPanel: {
+        maxWatts: PANEL_MAX_WATTS,
+        avgWatts: PANEL_AVG_WATTS,
+        weightKg: PANEL_WEIGHT_KG,
+        costUsd: PANEL_COST_USD,
+      },
+    };
+  }
+
+  // Signal (data) patching: given the wall's total pixels and panel count and
+  // a chosen controller brand/model, works out the minimum active data ports
+  // and a daisy-chain routing figure. Port capacity is the published nominal
+  // at 60Hz / 8-bit, scaled down for higher refresh or bit depth (bandwidth
+  // scales roughly linearly with both). Returns null if inputs are missing.
+  function signalPatching(opts, processors) {
+    if (!opts || !opts.totalPixels || !opts.brandId || !opts.modelId || !processors) return null;
+    var brand = (processors.brands || []).filter(function (b) { return b.id === opts.brandId; })[0];
+    if (!brand) return null;
+    var model = (brand.models || []).filter(function (m) { return m.id === opts.modelId; })[0];
+    if (!model) return null;
+    var cap = (processors.capacities || {})[brand.portType];
+    if (!cap) return null;
+
+    var refresh = Number(opts.refreshHz) || 60;
+    var bitDepth = Number(opts.bitDepth) || 8;
+    // Scale nominal (60Hz/8-bit) capacity by the extra bandwidth demanded.
+    var scaledCapacity = Math.floor(cap.pixelsPerPort * (60 / refresh) * (8 / bitDepth));
+    scaledCapacity = Math.max(1, scaledCapacity);
+
+    var portsNeeded = Math.ceil(opts.totalPixels / scaledCapacity);
+    var panelsPerRun = Math.ceil(opts.totalPanels / portsNeeded);
+    var exceeded = portsNeeded > model.ports;
+
+    return {
+      brandName: brand.name,
+      modelName: model.name,
+      portType: brand.portType,
+      portLabel: cap.portLabel,
+      nominalCapacity: cap.pixelsPerPort,
+      effectiveCapacity: scaledCapacity,
+      scaled: scaledCapacity !== cap.pixelsPerPort,
+      refreshHz: refresh,
+      bitDepth: bitDepth,
+      physicalPorts: model.ports,
+      portsNeeded: portsNeeded,
+      panelsPerRun: panelsPerRun,
+      exceeded: exceeded,
+    };
+  }
+
   function round(value, increment) {
     return Math.round(value / increment) * increment;
   }
@@ -184,6 +301,8 @@ window.LEDCalculator = (function () {
       label: 'To be confirmed based on venue and viewing distance',
       category: null,
     };
+    var pitchMm = null;          // numeric pitch, for pixel-count specs
+    var minViewDistanceM = null; // manufacturer/verified minimum for that pitch
     if (equipmentData && equipmentData.verified && Array.isArray(equipmentData.pixelPitchOptions) && equipmentData.pixelPitchOptions.length) {
       var suitable = equipmentData.pixelPitchOptions.filter(function (opt) {
         return distanceClamped >= (opt.minViewingDistanceM || 0);
@@ -191,8 +310,16 @@ window.LEDCalculator = (function () {
       if (suitable.length) {
         var best = suitable.reduce(function (a, b) { return (a.pitchMm < b.pitchMm ? a : b); });
         pixelPitch = { verified: true, label: best.pitchMm + 'mm pixel pitch (' + best.name + ')', category: best.name };
+        pitchMm = best.pitchMm;
+        minViewDistanceM = best.minViewingDistanceM || null;
       }
     }
+
+    var specs = buildSpecs({
+      panelsWide: panelsWide,
+      panelsHigh: panelsHigh,
+      pitchMm: pitchMm,
+    });
 
     // Standard configuration: if a verified, ready-built VideoSonic
     // configuration exists for the chosen aspect ratio, surface it as a
@@ -215,7 +342,10 @@ window.LEDCalculator = (function () {
       aspectRatioLabel: isCustomSize ? 'Actual placement (' + widthM.toFixed(2) + ':' + heightM.toFixed(2) + ')' : input.screenShape,
       aspectRatioDecimal: aspectRatio,
       pixelPitch: pixelPitch,
+      pitchMm: pitchMm,
+      minViewDistanceM: minViewDistanceM,
       standardConfig: standardConfig,
+      specs: specs,
       suitabilityText: viewingSuitabilityText(distanceClamped, input.contentType, heightM),
       audienceAdjusted: audienceAdjusted,
       outOfRange: outOfRange,
@@ -227,5 +357,6 @@ window.LEDCalculator = (function () {
     CONTENT_FACTORS: CONTENT_FACTORS,
     ASPECT_RATIOS: ASPECT_RATIOS,
     calculate: calculate,
+    signalPatching: signalPatching,
   };
 })();

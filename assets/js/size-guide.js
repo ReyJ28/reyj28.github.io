@@ -16,10 +16,16 @@
   var errorsEl = document.getElementById('calc-errors');
   var resultEl = document.getElementById('calc-result');
   var equipmentData = null;
+  var processorData = null;
+  var lastResult = null; // kept so controller changes can re-patch without recalculating the wall
+  var controllerState = { brandId: '', modelId: '', bitDepth: 8, refreshHz: 60, receivingCard: '', hdr: false, threeD: false };
   var track = window.VSAnalytics ? window.VSAnalytics.trackEvent : function () {};
   var CALC_NAME = 'led_wall_calculator';
 
+  var M_TO_FT = 3.28084;
+
   fetch('/data/led-equipment.json').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
+  fetch('/data/led-processors.json').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
 
   track('calculator_view', { calculator_name: CALC_NAME });
   var startTracked = false;
@@ -60,6 +66,10 @@
     if (audiencePreset.value === 'custom') return Number(audienceCustom.value);
     return Number(audiencePreset.value);
   }
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function fmt(n) { return Number(n).toLocaleString('en-US'); }
+  function m2ft(m) { return Math.round(m * M_TO_FT * 10) / 10; }
 
   // Builds an SVG diagram of the estimated LED wall: one grid cell per
   // 0.5m cabinet panel (exactly matching panelsWide x panelsHigh from the
@@ -117,8 +127,188 @@
       '<p class="calc-diagram__caption">Grid shows each 0.5m × 0.5m panel (' + r.panelsWide + ' × ' + r.panelsHigh + ' = ' + (r.panelsWide * r.panelsHigh) + ' panels total). Silhouette is an average 1.7m adult, shown for scale only.</p>';
   }
 
+  // ---- Left "Wall" spec panel -------------------------------------------
+  function specRow(label, value, estimate) {
+    return '<div class="calc-spec-row"><dt>' + esc(label) + (estimate ? ' <span class="calc-spec-est" title="General planning estimate, not a VideoSonic hardware spec">~</span>' : '') +
+      '</dt><dd>' + value + '</dd></div>';
+  }
+  function buildSpecPanel(r) {
+    var s = r.specs;
+    var wallSize = r.widthM.toFixed(1) + ' × ' + r.heightM.toFixed(1) + ' m <span class="calc-spec-alt">(' + m2ft(r.widthM) + ' × ' + m2ft(r.heightM) + ' ft)</span>';
+    var aspect = (r.aspectRatioDecimal ? r.aspectRatioDecimal.toFixed(2) : (r.widthM / r.heightM).toFixed(2)) + ':1';
+
+    var rows = '';
+    rows += specRow('Pixel Pitch', r.pitchMm ? (r.pitchMm + ' mm') : 'To be confirmed', false);
+    rows += specRow('Wall Size', wallSize, false);
+    rows += specRow('Layout', r.panelsWide + ' × ' + r.panelsHigh + ' panels', false);
+    rows += specRow('Total Panels', fmt(s.totalPanels), false);
+    rows += specRow('Wall Res.', (s.resW ? (s.resW + '×' + s.resH + ' px') : 'To be confirmed'), false);
+    rows += specRow('Total Pixels', (s.totalPixels ? (fmt(s.totalPixels) + ' px') : 'To be confirmed'), false);
+    rows += specRow('Aspect Ratio', aspect, false);
+    if (r.minViewDistanceM) {
+      rows += specRow('Min. Viewing Dist.', r.minViewDistanceM + ' m <span class="calc-spec-alt">(' + m2ft(r.minViewDistanceM) + ' ft)</span>', false);
+    }
+    rows += specRow('Wall Weight', fmt(s.weightKg) + ' kg <span class="calc-spec-alt">(' + fmt(s.weightLb) + ' lb)</span>', true);
+    rows += specRow('Average Power', s.avgKw + ' kW', true);
+    rows += specRow('Max Power', s.maxKw + ' kW', true);
+    rows += specRow('Supply Voltage', s.circuitVoltage + ' V', true);
+    rows += specRow('Max Current', s.maxCurrentA + ' A', true);
+    rows += specRow('Circuits', s.circuits + ' @' + s.circuitContinuousA + 'A max each', true);
+    rows += '<div class="calc-spec-row"><dt>Data Ports</dt><dd id="spec-ports">Select controller</dd></div>';
+    rows += specRow('Est. Cost', '~$' + fmt(s.costUsd), true);
+
+    return '<aside class="calc-specs" aria-label="Estimated wall specifications">' +
+      '<div class="calc-specs__head"><span class="eyebrow">Wall</span></div>' +
+      '<dl class="calc-specs__list">' + rows + '</dl>' +
+      '<p class="calc-specs__note"><span class="calc-spec-est">~</span> General industry planning estimate for a typical 0.5m indoor cabinet — <strong>not</strong> a VideoSonic hardware spec or price quote. Power figures assume a US 120V / 20A (NEC) basis.</p>' +
+      '</aside>';
+  }
+
+  // ---- Controller configuration -----------------------------------------
+  function buildControllerConfig() {
+    var brandOpts = '<option value="">Choose Brand</option>';
+    (processorData && processorData.brands || []).forEach(function (b) {
+      brandOpts += '<option value="' + esc(b.id) + '"' + (b.id === controllerState.brandId ? ' selected' : '') + '>' + esc(b.name) + '</option>';
+    });
+
+    return '<div class="calc-config">' +
+      '<h3>LED Wall Controller</h3>' +
+      '<div class="calc-config__grid">' +
+        '<label for="calc-brand">Controller Brand' +
+          '<select id="calc-brand" class="field">' + brandOpts + '</select></label>' +
+        '<label for="calc-model">Controller Model' +
+          '<select id="calc-model" class="field"><option value="">Choose Model</option></select></label>' +
+        '<label for="calc-bitdepth">Bit Depth' +
+          '<select id="calc-bitdepth" class="field">' +
+            '<option value="8" selected>8-bit</option><option value="10">10-bit</option><option value="12">12-bit</option>' +
+          '</select></label>' +
+        '<label for="calc-refresh">Frame Rate' +
+          '<select id="calc-refresh" class="field">' +
+            '<option value="60" selected>60 Hz</option><option value="120">120 Hz</option><option value="144">144 Hz</option>' +
+          '</select></label>' +
+        '<label for="calc-recvcard">Receiving Card' +
+          '<select id="calc-recvcard" class="field">' +
+            '<option value="">Choose Receiving Card</option><option>NovaStar A8s</option><option>NovaStar A10s Pro</option><option>Colorlight i5A / i9A</option><option>Brompton R2 / R2+</option>' +
+          '</select></label>' +
+        '<fieldset class="calc-config__opts"><legend>Input Options</legend>' +
+          '<label class="calc-check"><input type="checkbox" id="calc-hdr"> HDR</label>' +
+          '<label class="calc-check"><input type="checkbox" id="calc-3d"> 3D</label>' +
+        '</fieldset>' +
+      '</div>' +
+      '<p class="calc-config__note">Signal patching is calculated at the selected frame rate and bit depth. Port capacities are the published nominal at 60Hz / 8-bit.</p>' +
+    '</div>';
+  }
+
+  function populateModels() {
+    var modelSel = document.getElementById('calc-model');
+    if (!modelSel) return;
+    var brand = (processorData && processorData.brands || []).filter(function (b) { return b.id === controllerState.brandId; })[0];
+    var opts = '<option value="">Choose Model</option>';
+    if (brand) {
+      brand.models.forEach(function (m) {
+        opts += '<option value="' + esc(m.id) + '"' + (m.id === controllerState.modelId ? ' selected' : '') + '>' + esc(m.name) + ' (' + m.ports + ' ports)</option>';
+      });
+    }
+    modelSel.innerHTML = opts;
+  }
+
+  // ---- Signal patching (updates on controller change) --------------------
+  function renderSignalPatching() {
+    var el = document.getElementById('calc-signal-plan');
+    var portsCell = document.getElementById('spec-ports');
+    if (!el || !lastResult) return;
+
+    var sig = window.LEDCalculator.signalPatching({
+      totalPixels: lastResult.specs.totalPixels,
+      totalPanels: lastResult.specs.totalPanels,
+      brandId: controllerState.brandId,
+      modelId: controllerState.modelId,
+      refreshHz: controllerState.refreshHz,
+      bitDepth: controllerState.bitDepth,
+    }, processorData);
+
+    if (!sig) {
+      el.className = 'calc-patch';
+      el.innerHTML = '<h4>Section A — Signal Patching</h4>' +
+        '<p class="calc-patch__prompt">Select a controller brand and model above to generate the data-port and daisy-chain plan.</p>';
+      if (portsCell) portsCell.textContent = 'Select controller';
+      return;
+    }
+
+    if (portsCell) portsCell.textContent = sig.portsNeeded + ' of ' + sig.physicalPorts + ' (' + sig.portLabel + ')';
+
+    var capNote = sig.scaled
+      ? 'Capacity scaled to ' + fmt(sig.effectiveCapacity) + ' px/port for ' + sig.refreshHz + 'Hz / ' + sig.bitDepth + '-bit (nominal ' + fmt(sig.nominalCapacity) + ' px/port at 60Hz/8-bit).'
+      : fmt(sig.nominalCapacity) + ' px/port at 60Hz / 8-bit (' + sig.portLabel + ').';
+
+    var warn = sig.exceeded
+      ? '<div class="calc-patch__warn" role="alert"><strong>Processor capacity exceeded.</strong> This wall needs ' + sig.portsNeeded +
+        ' active ports but the ' + esc(sig.brandName) + ' ' + esc(sig.modelName) + ' has only ' + sig.physicalPorts +
+        '. Upgrade to a model with more ports, add a second processor, or reduce the frame rate / bit depth.</div>'
+      : '';
+
+    el.className = 'calc-patch' + (sig.exceeded ? ' calc-patch--warn' : '');
+    el.innerHTML =
+      '<h4>Section A — Signal Patching</h4>' +
+      '<div class="calc-patch__stats">' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">' + sig.portsNeeded + '</span><span class="calc-patch__lbl">active ports needed</span></div>' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">' + sig.physicalPorts + '</span><span class="calc-patch__lbl">ports on ' + esc(sig.modelName) + '</span></div>' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">~' + sig.panelsPerRun + '</span><span class="calc-patch__lbl">panels per data run</span></div>' +
+      '</div>' +
+      '<p class="calc-patch__plan">Daisy-chain approximately <strong>' + sig.panelsPerRun + ' panels per ' + esc(sig.portLabel) + ' data line</strong> across ' + sig.portsNeeded + ' run' + (sig.portsNeeded === 1 ? '' : 's') + '.</p>' +
+      '<p class="calc-patch__meta">' + capNote + '</p>' +
+      warn;
+  }
+
+  // ---- Power distribution (static from specs) ----------------------------
+  function buildPowerPatching(r) {
+    var s = r.specs;
+    return '<div class="calc-patch">' +
+      '<h4>Section B — Power Distribution <span class="calc-spec-est" title="General planning estimate">~</span></h4>' +
+      '<div class="calc-patch__stats">' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">' + s.maxKw + ' kW</span><span class="calc-patch__lbl">max load</span></div>' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">' + s.avgKw + ' kW</span><span class="calc-patch__lbl">average load</span></div>' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">' + s.circuits + '</span><span class="calc-patch__lbl">×' + s.circuitBreakerA + 'A / ' + s.circuitVoltage + 'V circuits</span></div>' +
+      '</div>' +
+      '<p class="calc-patch__plan">Link a maximum of <strong>' + s.panelsPerCircuit + ' panels per ' + s.circuitBreakerA + 'A (' + s.circuitVoltage + 'V) circuit loop</strong> — a total of <strong>' + s.circuits + ' dedicated circuits</strong> for this wall.</p>' +
+      '<p class="calc-patch__meta">Assumes ' + s.perPanel.maxWatts + 'W max / ' + s.perPanel.avgWatts + 'W avg per 0.5m panel and the NEC 80% continuous-load rule (' + s.circuitBreakerA + 'A breaker → ' + s.circuitContinuousA + 'A continuous). General estimate on a US 120V basis — confirm the venue\'s actual supply with the technical team.</p>' +
+    '</div>';
+  }
+
+  function wireControllerConfig() {
+    var brandSel = document.getElementById('calc-brand');
+    var modelSel = document.getElementById('calc-model');
+    var bitSel = document.getElementById('calc-bitdepth');
+    var refreshSel = document.getElementById('calc-refresh');
+    var recvSel = document.getElementById('calc-recvcard');
+    var hdr = document.getElementById('calc-hdr');
+    var threeD = document.getElementById('calc-3d');
+    if (!brandSel) return;
+
+    populateModels();
+
+    brandSel.addEventListener('change', function () {
+      controllerState.brandId = brandSel.value;
+      controllerState.modelId = '';
+      populateModels();
+      renderSignalPatching();
+    });
+    modelSel.addEventListener('change', function () {
+      controllerState.modelId = modelSel.value;
+      renderSignalPatching();
+      if (modelSel.value) {
+        track('calculator_controller_select', { calculator_name: CALC_NAME, brand: controllerState.brandId, model: controllerState.modelId });
+      }
+    });
+    bitSel.addEventListener('change', function () { controllerState.bitDepth = Number(bitSel.value); renderSignalPatching(); });
+    refreshSel.addEventListener('change', function () { controllerState.refreshHz = Number(refreshSel.value); renderSignalPatching(); });
+    if (recvSel) recvSel.addEventListener('change', function () { controllerState.receivingCard = recvSel.value; });
+    if (hdr) hdr.addEventListener('change', function () { controllerState.hdr = hdr.checked; });
+    if (threeD) threeD.addEventListener('change', function () { controllerState.threeD = threeD.checked; });
+  }
+
   function renderErrors(errors) {
-    errorsEl.innerHTML = errors.map(function (e) { return '<li>' + e + '</li>'; }).join('');
+    errorsEl.innerHTML = errors.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('');
     errorsEl.hidden = errors.length === 0;
     resultEl.hidden = true;
     if (errors.length) {
@@ -128,6 +318,7 @@
 
   function renderResult(r, eventTypeLabel) {
     errorsEl.hidden = true;
+    lastResult = r;
     var notes = [];
     if (r.audienceAdjusted) {
       notes.push('Widened to suit your estimated audience size and typical sightline coverage for an event of this scale.');
@@ -139,30 +330,44 @@
       notes.push('For reference: VideoSonic\'s standard ' + r.standardConfig.aspectRatioLabel + ' configuration is ' + r.standardConfig.widthM.toFixed(1) + 'm × ' + r.standardConfig.heightM.toFixed(1) + 'm (' + r.standardConfig.cabinetsWide + '×' + r.standardConfig.cabinetsHigh + ' cabinets, ' + r.standardConfig.pitchMm + 'mm pixel pitch) — your estimate may be built up or down from this using the same cabinet modules.');
     }
 
-    resultEl.innerHTML =
-      '<span class="eyebrow">Your Estimated LED Wall</span>' +
-      '<div class="calc-result__dims">' + r.widthM.toFixed(2) + 'm × ' + r.heightM.toFixed(2) + 'm <span class="calc-result__panels">= ' + r.panelsWide + ' panels × ' + r.panelsHigh + ' panels</span></div>' +
-      '<p style="color:var(--text-muted);font-size:.85rem;margin-top:-10px">Based on 0.5m × 0.5m LED cabinet units, matching VideoSonic\'s standard modular build.</p>' +
-      '<div class="calc-result__meta">' +
-        '<span class="tag">' + r.aspectRatioLabel + '</span>' +
-        '<span class="tag">' + r.areaM2.toFixed(2) + ' m²</span>' +
-        '<span class="tag">' + r.pixelPitch.label + '</span>' +
-      '</div>' +
-      '<p class="calc-result__suitability">Recommended for your estimated viewing conditions. ' + r.suitabilityText + '</p>' +
-      (notes.length ? '<p class="calc-result__note">' + notes.join(' ') + '</p>' : '') +
-      '<div class="calc-diagram-wrap">' + buildWallDiagram(r) + '</div>' +
-      '<div class="calc-disclaimer">' +
-        '<strong>Planning estimate only.</strong> LED wall size and pixel pitch recommendations depend on venue dimensions, viewing distance, content requirements, camera requirements, stage design and available equipment. Final specifications should be confirmed by the VideoSonic technical production team.' +
-      '</div>' +
-      '<div class="calc-cta">' +
-        '<h3>Want an exact LED configuration?</h3>' +
-        '<p>Send VideoSonic your event requirements and let the technical team prepare the appropriate configuration.</p>' +
-        '<div class="hero__ctas">' +
-          '<a class="btn btn-primary" data-calc-quote-cta href="/contact/">Request an LED Wall Quote</a>' +
-          '<a class="btn btn-outline" data-calc-quote-cta href="https://wa.me/639278845028" target="_blank" rel="noopener">Talk to Our Technical Team</a>' +
+    var main =
+      '<div class="calc-main">' +
+        '<span class="eyebrow">Your Estimated LED Wall</span>' +
+        '<div class="calc-result__dims">' + r.widthM.toFixed(2) + 'm × ' + r.heightM.toFixed(2) + 'm <span class="calc-result__panels">= ' + r.panelsWide + ' panels × ' + r.panelsHigh + ' panels</span></div>' +
+        '<p style="color:var(--text-muted);font-size:.85rem;margin-top:-10px">Based on 0.5m × 0.5m LED cabinet units, matching VideoSonic\'s standard modular build.</p>' +
+        '<div class="calc-result__meta">' +
+          '<span class="tag">' + esc(r.aspectRatioLabel) + '</span>' +
+          '<span class="tag">' + r.areaM2.toFixed(2) + ' m²</span>' +
+          '<span class="tag">' + esc(r.pixelPitch.label) + '</span>' +
+        '</div>' +
+        '<p class="calc-result__suitability">Recommended for your estimated viewing conditions. ' + esc(r.suitabilityText) + '</p>' +
+        (notes.length ? '<p class="calc-result__note">' + notes.map(esc).join(' ') + '</p>' : '') +
+        '<div class="calc-diagram-wrap">' + buildWallDiagram(r) + '</div>' +
+        buildControllerConfig() +
+        '<div class="calc-patch-wrap">' +
+          '<h3>Technical Patching Plan</h3>' +
+          '<div class="calc-patch" id="calc-signal-plan"><h4>Section A — Signal Patching</h4><p class="calc-patch__prompt">Select a controller brand and model above to generate the data-port and daisy-chain plan.</p></div>' +
+          buildPowerPatching(r) +
+        '</div>' +
+        '<div class="calc-disclaimer">' +
+          '<strong>Planning estimate only.</strong> LED wall size, pixel pitch, power and signal figures depend on venue dimensions, viewing distance, content and camera requirements, stage design, the confirmed panel product and available equipment. Final specifications should be confirmed by the VideoSonic technical production team.' +
+        '</div>' +
+        '<div class="calc-cta">' +
+          '<h3>Want an exact LED configuration?</h3>' +
+          '<p>Send VideoSonic your event requirements and let the technical team prepare the appropriate configuration.</p>' +
+          '<div class="hero__ctas">' +
+            '<a class="btn btn-primary" data-calc-quote-cta href="/contact/">Request an LED Wall Quote</a>' +
+            '<a class="btn btn-outline" data-calc-quote-cta href="https://wa.me/639278845028" target="_blank" rel="noopener">Talk to Our Technical Team</a>' +
+          '</div>' +
         '</div>' +
       '</div>';
+
+    resultEl.innerHTML = '<div class="calc-layout">' + buildSpecPanel(r) + main + '</div>';
     resultEl.hidden = false;
+
+    wireControllerConfig();
+    renderSignalPatching();
+
     var quoteCtas = resultEl.querySelectorAll('[data-calc-quote-cta]');
     for (var i = 0; i < quoteCtas.length; i++) {
       quoteCtas[i].addEventListener('click', function (e) {

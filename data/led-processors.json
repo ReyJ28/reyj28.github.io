@@ -1,0 +1,36 @@
+{
+  "_comment": "LED processor/controller reference for the calculator's signal-patching plan. Port capacities are the widely-published NOMINAL limits at 60Hz / 8-bit; the calculator scales them down for higher refresh/bit depth. These are general industry planning figures for common controllers, not a claim about specific VideoSonic inventory.",
+  "capacities": {
+    "gigabit": { "pixelsPerPort": 650000, "portLabel": "Cat6 (1G)" },
+    "fiber10g": { "pixelsPerPort": 2000000, "portLabel": "10G Fiber" }
+  },
+  "brands": [
+    {
+      "id": "novastar",
+      "name": "NovaStar",
+      "portType": "gigabit",
+      "models": [
+        { "id": "vx4s", "name": "VX4S", "ports": 4 },
+        { "id": "mctrl4k", "name": "MCTRL4K", "ports": 16 },
+        { "id": "h-series", "name": "H-Series", "ports": 32 }
+      ]
+    },
+    {
+      "id": "colorlight",
+      "name": "Colorlight",
+      "portType": "gigabit",
+      "models": [
+        { "id": "x4", "name": "X4", "ports": 4 },
+        { "id": "x20", "name": "X20", "ports": 20 }
+      ]
+    },
+    {
+      "id": "brompton",
+      "name": "Brompton Technology",
+      "portType": "fiber10g",
+      "models": [
+        { "id": "sx40", "name": "Tessera SX40", "ports": 4 }
+      ]
+    }
+  ]
+}
