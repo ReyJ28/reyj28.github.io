@@ -322,6 +322,13 @@ body{padding-bottom:56px}
 .calc-check{flex-direction:row!important;align-items:center;gap:8px!important;color:var(--text)!important;font-size:.9rem!important}
 .calc-check input{width:18px;height:18px;accent-color:var(--accent)}
 .calc-config__note{margin:14px 0 0;font-size:.78rem;color:var(--text-muted)}
+.calc-flowfield{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.calc-flowlabel{font-size:.82rem;color:var(--text-muted)}
+.calc-flowgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:280px}
+.calc-flowbtn{display:flex;align-items:center;justify-content:center;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text-muted);transition:border-color .15s,color .15s}
+.calc-flowbtn:hover{border-color:var(--accent);color:var(--text)}
+.calc-flowbtn.is-active{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.calc-flowicon{width:30px;height:30px;display:block}
 .calc-config__bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}
 .calc-flowtoggle{padding:8px 18px;font-size:.85rem}
 .calc-config__hint{font-size:.78rem;color:var(--text-muted)}

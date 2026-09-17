@@ -25,8 +25,8 @@
   var M_TO_FT = 3.28084;
 
   // ?v bumped on each data change so browsers don't serve a stale cached copy.
-  fetch('/data/led-equipment.json?v=20260917d').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
-  fetch('/data/led-processors.json?v=20260917d').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
+  fetch('/data/led-equipment.json?v=20260917e').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
+  fetch('/data/led-processors.json?v=20260917e').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
 
   track('calculator_view', { calculator_name: CALC_NAME });
   var startTracked = false;
@@ -295,6 +295,19 @@
     ['bl-v', 'Bottom-left → columns'], ['br-v', 'Bottom-right → columns'],
   ];
 
+  // Mini icon that literally draws a pattern's serpentine path on a 3x3 grid,
+  // with a dot at the start corner -- used on the flow-direction buttons.
+  function flowIcon(start, axis) {
+    var order = serpentineOrder(3, 3, start, axis);
+    var xy = function (p) { return [7 + p[0] * 8, 7 + p[1] * 8]; };
+    var pts = order.map(function (p) { var c = xy(p); return c[0] + ',' + c[1]; });
+    var s = xy(order[0]);
+    return '<svg viewBox="0 0 30 30" class="calc-flowicon" aria-hidden="true">' +
+      '<polyline points="' + pts.join(' ') + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+      '<circle cx="' + s[0] + '" cy="' + s[1] + '" r="3" fill="currentColor"/>' +
+    '</svg>';
+  }
+
   function buildControllerConfig() {
     var brandOpts = '<option value="">Choose Brand</option>';
     (processorData && processorData.brands || []).forEach(function (b) {
@@ -304,8 +317,10 @@
       return '<option value="' + v + '"' + (v === controllerState.supplyVoltage ? ' selected' : '') + '>' + v + ' V</option>';
     }).join('');
     var currentFlow = controllerState.flowStart + '-' + controllerState.flowAxis;
-    var flowOpts = FLOW_OPTIONS.map(function (f) {
-      return '<option value="' + f[0] + '"' + (f[0] === currentFlow ? ' selected' : '') + '>' + f[1] + '</option>';
+    var flowGrid = FLOW_OPTIONS.map(function (f) {
+      var active = f[0] === currentFlow;
+      var parts = f[0].split('-');
+      return '<button type="button" class="calc-flowbtn' + (active ? ' is-active' : '') + '" data-flow="' + f[0] + '" title="' + esc(f[1]) + '" aria-label="' + esc(f[1]) + '" aria-pressed="' + active + '">' + flowIcon(parts[0], parts[1]) + '</button>';
     }).join('');
 
     return '<div class="calc-config">' +
@@ -331,8 +346,8 @@
           '<select id="calc-recvcard" class="field">' +
             '<option value="">Choose Receiving Card</option><option>NovaStar A8s</option><option>NovaStar A10s Pro</option><option>Colorlight i5A / i9A</option><option>Brompton R2 / R2+</option>' +
           '</select></label>' +
-        '<label for="calc-flowdir">Signal Flow Direction' +
-          '<select id="calc-flowdir" class="field">' + flowOpts + '</select></label>' +
+        '<div class="calc-flowfield"><span class="calc-flowlabel">Signal Flow Direction</span>' +
+          '<div class="calc-flowgrid" role="group" aria-label="Signal flow direction">' + flowGrid + '</div></div>' +
         '<fieldset class="calc-config__opts"><legend>Input Options</legend>' +
           '<label class="calc-check"><input type="checkbox" id="calc-hdr"> HDR</label>' +
           '<label class="calc-check"><input type="checkbox" id="calc-3d"> 3D</label>' +
@@ -495,12 +510,20 @@
       updatePower();
     });
 
-    var flowSel = document.getElementById('calc-flowdir');
-    if (flowSel) flowSel.addEventListener('change', function () {
-      var parts = flowSel.value.split('-');
-      controllerState.flowStart = parts[0];
-      controllerState.flowAxis = parts[1];
-      redrawFlow();
+    var flowBtns = document.querySelectorAll('.calc-flowbtn');
+    Array.prototype.forEach.call(flowBtns, function (btn) {
+      btn.addEventListener('click', function () {
+        var val = btn.getAttribute('data-flow');
+        var parts = val.split('-');
+        controllerState.flowStart = parts[0];
+        controllerState.flowAxis = parts[1];
+        Array.prototype.forEach.call(flowBtns, function (b) {
+          var on = b.getAttribute('data-flow') === val;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-pressed', String(on));
+        });
+        redrawFlow();
+      });
     });
 
     var flowToggle = document.getElementById('calc-flowtoggle');
