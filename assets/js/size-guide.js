@@ -11,7 +11,6 @@
   var screenShape = document.getElementById('calc-screen-shape');
   var customRatioWrap = document.getElementById('calc-ratio-wrap');
   var placementUnit = document.getElementById('calc-placement-unit');
-  var unitLabels = form.querySelectorAll('[data-unit-label]');
   var widthFt = document.getElementById('calc-width-ft');
   var heightFt = document.getElementById('calc-height-ft');
   var errorsEl = document.getElementById('calc-errors');
@@ -41,13 +40,12 @@
     widthFt.required = isCustom;
     heightFt.required = isCustom;
   }
-  // Switches the custom placement-size fields between feet and meters:
-  // updates the unit shown in each label and gives a sensible placeholder
-  // for the selected unit. The actual conversion happens in the calculator.
+  // Switches the custom placement-size fields between feet and meters by
+  // giving a sensible placeholder for the selected unit. The unit itself is
+  // shown by the Measurement Units selector; the conversion happens in the
+  // calculator.
   function updatePlacementUnit() {
     var meters = placementUnit && placementUnit.value === 'meters';
-    var word = meters ? 'meters' : 'feet';
-    for (var i = 0; i < unitLabels.length; i++) unitLabels[i].textContent = word;
     widthFt.placeholder = meters ? 'e.g. 6' : 'e.g. 20';
     heightFt.placeholder = meters ? 'e.g. 4' : 'e.g. 12';
   }
