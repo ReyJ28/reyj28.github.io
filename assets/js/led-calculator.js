@@ -63,16 +63,43 @@ window.LEDCalculator = (function () {
   var PANEL_WEIGHT_KG = 8.5;               // general assumption, per cabinet
   var PANEL_COST_USD = 305;                // general assumption, hardware only, indicative
 
-  // Electrical basis: standard US 120V / 20A branch circuit with the NEC
-  // 80% continuous-load derating (a 20A breaker carries max 16A / ~1920W
-  // continuous). Grouped so a 230V market basis can be swapped in later.
-  var CIRCUIT_VOLTAGE = 120;
+  // Electrical basis: a branch circuit at the selected supply voltage, with a
+  // 20A breaker and an 80% continuous-load safety margin. Supply voltage
+  // varies by region -- 120V in the US/Canada, 220-240V across most of
+  // Asia/Europe including the Philippines -- so it is a user-selectable input.
+  // 220V is the default.
+  var DEFAULT_VOLTAGE = 220;
   var CIRCUIT_BREAKER_A = 20;
-  var CIRCUIT_DERATE = 0.8;                // NEC continuous-load rule
-  var CIRCUIT_CONTINUOUS_W = CIRCUIT_VOLTAGE * CIRCUIT_BREAKER_A * CIRCUIT_DERATE; // 1920W
-  var CIRCUIT_CONTINUOUS_A = CIRCUIT_BREAKER_A * CIRCUIT_DERATE; // 16A
+  var CIRCUIT_DERATE = 0.8;                // continuous-load safety margin
 
   var KG_TO_LB = 2.20462;
+
+  // Power distribution for a panel count at a chosen supply voltage. Watts (and
+  // therefore kW) are voltage-independent; voltage changes the current draw and
+  // how many panels fit on one 20A circuit. Exposed so the UI can recompute
+  // live when the user switches region/voltage without recalculating the wall.
+  function powerPlan(totalPanels, opts) {
+    var voltage = (opts && Number(opts.voltage)) || DEFAULT_VOLTAGE;
+    var breakerA = (opts && Number(opts.breakerA)) || CIRCUIT_BREAKER_A;
+    var continuousA = breakerA * CIRCUIT_DERATE;
+    var continuousW = voltage * continuousA;
+    var maxWatts = totalPanels * PANEL_MAX_WATTS;
+    var avgWatts = totalPanels * PANEL_AVG_WATTS;
+    var panelsPerCircuit = Math.max(1, Math.floor(continuousW / PANEL_MAX_WATTS));
+    return {
+      voltage: voltage,
+      breakerA: breakerA,
+      continuousA: Math.round(continuousA * 10) / 10,
+      maxWatts: maxWatts,
+      avgWatts: avgWatts,
+      maxKw: Math.round(maxWatts / 1000 * 100) / 100,
+      avgKw: Math.round(avgWatts / 1000 * 100) / 100,
+      maxCurrentA: Math.round(maxWatts / voltage * 10) / 10,
+      panelsPerCircuit: panelsPerCircuit,
+      circuits: Math.ceil(totalPanels / panelsPerCircuit),
+      perPanel: { maxWatts: PANEL_MAX_WATTS, avgWatts: PANEL_AVG_WATTS },
+    };
+  }
 
   // Builds the derived technical spec set shown in the left "Wall" panel and
   // used by the power-distribution plan. pitchMm may be null when no verified
@@ -86,16 +113,10 @@ window.LEDCalculator = (function () {
     var resH = panelPxAxis ? dims.panelsHigh * panelPxAxis : null;
     var totalPixels = (resW && resH) ? resW * resH : null;
 
-    var maxWatts = totalPanels * PANEL_MAX_WATTS;
-    var avgWatts = totalPanels * PANEL_AVG_WATTS;
-
-    // Power distribution on standard 20A/120V circuits (NEC 80% rule).
-    var panelsPerCircuit = Math.max(1, Math.floor(CIRCUIT_CONTINUOUS_W / PANEL_MAX_WATTS)); // 7
-    var circuits = Math.ceil(totalPanels / panelsPerCircuit);
-    var maxCurrentA = maxWatts / CIRCUIT_VOLTAGE;
-
     var weightKg = totalPanels * PANEL_WEIGHT_KG;
 
+    // Power/current/circuits are computed by powerPlan (voltage-dependent) at
+    // render time so the region selector can change them without recalculating.
     return {
       totalPanels: totalPanels,
       panelPxAxis: panelPxAxis,
@@ -104,23 +125,9 @@ window.LEDCalculator = (function () {
       totalPixels: totalPixels,
       weightKg: Math.round(weightKg * 10) / 10,
       weightLb: Math.round(weightKg * KG_TO_LB * 10) / 10,
-      maxWatts: maxWatts,
-      avgWatts: avgWatts,
-      maxKw: Math.round(maxWatts / 1000 * 100) / 100,
-      avgKw: Math.round(avgWatts / 1000 * 100) / 100,
-      maxCurrentA: Math.round(maxCurrentA * 10) / 10,
-      panelsPerCircuit: panelsPerCircuit,
-      circuits: circuits,
-      circuitVoltage: CIRCUIT_VOLTAGE,
-      circuitBreakerA: CIRCUIT_BREAKER_A,
-      circuitContinuousA: CIRCUIT_CONTINUOUS_A,
       costUsd: Math.round(totalPanels * PANEL_COST_USD),
-      perPanel: {
-        maxWatts: PANEL_MAX_WATTS,
-        avgWatts: PANEL_AVG_WATTS,
-        weightKg: PANEL_WEIGHT_KG,
-        costUsd: PANEL_COST_USD,
-      },
+      perPanelWeightKg: PANEL_WEIGHT_KG,
+      perPanelCostUsd: PANEL_COST_USD,
     };
   }
 
@@ -358,5 +365,6 @@ window.LEDCalculator = (function () {
     ASPECT_RATIOS: ASPECT_RATIOS,
     calculate: calculate,
     signalPatching: signalPatching,
+    powerPlan: powerPlan,
   };
 })();

@@ -18,15 +18,15 @@
   var equipmentData = null;
   var processorData = null;
   var lastResult = null; // kept so controller changes can re-patch without recalculating the wall
-  var controllerState = { brandId: '', modelId: '', bitDepth: 8, refreshHz: 60, receivingCard: '', hdr: false, threeD: false };
+  var controllerState = { brandId: '', modelId: '', bitDepth: 8, refreshHz: 60, receivingCard: '', hdr: false, threeD: false, supplyVoltage: 220, flowStart: 'tl', flowAxis: 'h', showFlow: true };
   var track = window.VSAnalytics ? window.VSAnalytics.trackEvent : function () {};
   var CALC_NAME = 'led_wall_calculator';
 
   var M_TO_FT = 3.28084;
 
   // ?v bumped on each data change so browsers don't serve a stale cached copy.
-  fetch('/data/led-equipment.json?v=20260917b').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
-  fetch('/data/led-processors.json?v=20260917b').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
+  fetch('/data/led-equipment.json?v=20260917c').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
+  fetch('/data/led-processors.json?v=20260917c').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
 
   track('calculator_view', { calculator_name: CALC_NAME });
   var startTracked = false;
@@ -80,13 +80,29 @@
   // large wall needs more ports than colours).
   var PORT_COLORS = ['#22d3ee', '#f59e0b', '#a78bfa', '#34d399', '#f472b6', '#60a5fa', '#facc15', '#fb7185', '#4ade80', '#c084fc', '#38bdf8', '#fdba74'];
 
-  // Row-major serpentine panel order (matches the horizontal daisy-chain shown
-  // in NovaStar's port-config view): left->right on even rows, right->left on odd.
-  function serpentineOrder(w, h) {
+  // Serpentine panel order for the daisy-chain, matching a controller's "quick
+  // connection" patterns. start = corner the cabling begins at ('tl','tr','bl',
+  // 'br'); axis = 'h' snakes along rows, 'v' snakes along columns.
+  function serpentineOrder(w, h, start, axis) {
+    start = start || 'tl';
+    axis = axis || 'h';
+    var fromTop = start.charAt(0) === 't';
+    var fromLeft = start.charAt(1) === 'l';
     var order = [];
-    for (var row = 0; row < h; row++) {
-      if (row % 2 === 0) { for (var c = 0; c < w; c++) order.push([c, row]); }
-      else { for (var c2 = w - 1; c2 >= 0; c2--) order.push([c2, row]); }
+    if (axis === 'v') {
+      for (var ci = 0; ci < w; ci++) {
+        var col = fromLeft ? ci : (w - 1 - ci);
+        var topToBottom = fromTop ? (ci % 2 === 0) : (ci % 2 === 1);
+        if (topToBottom) { for (var r1 = 0; r1 < h; r1++) order.push([col, r1]); }
+        else { for (var r2 = h - 1; r2 >= 0; r2--) order.push([col, r2]); }
+      }
+    } else {
+      for (var ri = 0; ri < h; ri++) {
+        var row = fromTop ? ri : (h - 1 - ri);
+        var leftToRight = fromLeft ? (ri % 2 === 0) : (ri % 2 === 1);
+        if (leftToRight) { for (var c1 = 0; c1 < w; c1++) order.push([c1, row]); }
+        else { for (var c2 = w - 1; c2 >= 0; c2--) order.push([c2, row]); }
+      }
     }
     return order;
   }
@@ -95,7 +111,7 @@
   // up to panelsPerRun panels. Returns per-run metadata (port #, colour, panels).
   function runChunks(r, sig) {
     if (!sig || !sig.panelsPerRun) return [];
-    var order = serpentineOrder(r.panelsWide, r.panelsHigh);
+    var order = serpentineOrder(r.panelsWide, r.panelsHigh, controllerState.flowStart, controllerState.flowAxis);
     var per = sig.panelsPerRun;
     var runs = [];
     for (var k = 0; k * per < order.length; k++) {
@@ -232,7 +248,13 @@
     return '<div class="calc-spec-row"><dt>' + esc(label) + (estimate ? ' <span class="calc-spec-est" title="General planning estimate, not a VideoSonic hardware spec">~</span>' : '') +
       '</dt><dd>' + value + '</dd></div>';
   }
-  function buildSpecPanel(r) {
+  // A spec row whose value cell has an id, so voltage-dependent cells can be
+  // updated in place when the region/voltage selector changes.
+  function specRowId(label, id, value, estimate) {
+    return '<div class="calc-spec-row"><dt>' + esc(label) + (estimate ? ' <span class="calc-spec-est" title="General planning estimate, not a VideoSonic hardware spec">~</span>' : '') +
+      '</dt><dd id="' + id + '">' + value + '</dd></div>';
+  }
+  function buildSpecPanel(r, pp) {
     var s = r.specs;
     var wallSize = r.widthM.toFixed(1) + ' × ' + r.heightM.toFixed(1) + ' m <span class="calc-spec-alt">(' + m2ft(r.widthM) + ' × ' + m2ft(r.heightM) + ' ft)</span>';
     var aspect = (r.aspectRatioDecimal ? r.aspectRatioDecimal.toFixed(2) : (r.widthM / r.heightM).toFixed(2)) + ':1';
@@ -249,27 +271,42 @@
       rows += specRow('Min. Viewing Dist.', r.minViewDistanceM + ' m <span class="calc-spec-alt">(' + m2ft(r.minViewDistanceM) + ' ft)</span>', false);
     }
     rows += specRow('Wall Weight', fmt(s.weightKg) + ' kg <span class="calc-spec-alt">(' + fmt(s.weightLb) + ' lb)</span>', true);
-    rows += specRow('Average Power', s.avgKw + ' kW', true);
-    rows += specRow('Max Power', s.maxKw + ' kW', true);
-    rows += specRow('Supply Voltage', s.circuitVoltage + ' V', true);
-    rows += specRow('Max Current', s.maxCurrentA + ' A', true);
-    rows += specRow('Circuits', s.circuits + ' @' + s.circuitContinuousA + 'A max each', true);
+    rows += specRow('Average Power', pp.avgKw + ' kW', true);
+    rows += specRow('Max Power', pp.maxKw + ' kW', true);
+    rows += specRowId('Supply Voltage', 'spec-voltage', pp.voltage + ' V', true);
+    rows += specRowId('Max Current', 'spec-current', pp.maxCurrentA + ' A', true);
+    rows += specRowId('Circuits', 'spec-circuits', pp.circuits + ' @' + pp.continuousA + 'A max each', true);
     rows += '<div class="calc-spec-row"><dt>Data Ports</dt><dd id="spec-ports">Select controller</dd></div>';
     rows += specRow('Est. Cost', '~$' + fmt(s.costUsd), true);
 
     return '<aside class="calc-specs" aria-label="Estimated wall specifications">' +
       '<div class="calc-specs__head"><span class="eyebrow">Wall</span></div>' +
       '<dl class="calc-specs__list">' + rows + '</dl>' +
-      '<p class="calc-specs__note"><span class="calc-spec-est">~</span> General industry planning estimate for a typical 0.5m indoor cabinet — <strong>not</strong> a VideoSonic hardware spec or price quote. Power figures assume a US 120V / 20A (NEC) basis.</p>' +
+      '<p class="calc-specs__note"><span class="calc-spec-est">~</span> General industry planning estimate for a typical 0.5m indoor cabinet — <strong>not</strong> a VideoSonic hardware spec or price quote. Power figures use the selected supply voltage, 20A circuits and an 80% continuous-load margin.</p>' +
       '</aside>';
   }
 
   // ---- Controller configuration -----------------------------------------
+  var VOLTAGE_OPTIONS = [120, 220, 230, 240];
+  var FLOW_OPTIONS = [
+    ['tl-h', 'Top-left → rows'], ['tr-h', 'Top-right → rows'],
+    ['bl-h', 'Bottom-left → rows'], ['br-h', 'Bottom-right → rows'],
+    ['tl-v', 'Top-left → columns'], ['tr-v', 'Top-right → columns'],
+    ['bl-v', 'Bottom-left → columns'], ['br-v', 'Bottom-right → columns'],
+  ];
+
   function buildControllerConfig() {
     var brandOpts = '<option value="">Choose Brand</option>';
     (processorData && processorData.brands || []).forEach(function (b) {
       brandOpts += '<option value="' + esc(b.id) + '"' + (b.id === controllerState.brandId ? ' selected' : '') + '>' + esc(b.name) + '</option>';
     });
+    var voltageOpts = VOLTAGE_OPTIONS.map(function (v) {
+      return '<option value="' + v + '"' + (v === controllerState.supplyVoltage ? ' selected' : '') + '>' + v + ' V</option>';
+    }).join('');
+    var currentFlow = controllerState.flowStart + '-' + controllerState.flowAxis;
+    var flowOpts = FLOW_OPTIONS.map(function (f) {
+      return '<option value="' + f[0] + '"' + (f[0] === currentFlow ? ' selected' : '') + '>' + f[1] + '</option>';
+    }).join('');
 
     return '<div class="calc-config">' +
       '<h3>LED Wall Controller</h3>' +
@@ -286,14 +323,24 @@
           '<select id="calc-refresh" class="field">' +
             '<option value="60" selected>60 Hz</option><option value="120">120 Hz</option><option value="144">144 Hz</option>' +
           '</select></label>' +
+        '<label for="calc-voltage">Supply Voltage <span class="calc-spec-est" title="Varies by region">~</span>' +
+          '<select id="calc-voltage" class="field">' +
+            voltageOpts +
+          '</select></label>' +
         '<label for="calc-recvcard">Receiving Card' +
           '<select id="calc-recvcard" class="field">' +
             '<option value="">Choose Receiving Card</option><option>NovaStar A8s</option><option>NovaStar A10s Pro</option><option>Colorlight i5A / i9A</option><option>Brompton R2 / R2+</option>' +
           '</select></label>' +
+        '<label for="calc-flowdir">Signal Flow Direction' +
+          '<select id="calc-flowdir" class="field">' + flowOpts + '</select></label>' +
         '<fieldset class="calc-config__opts"><legend>Input Options</legend>' +
           '<label class="calc-check"><input type="checkbox" id="calc-hdr"> HDR</label>' +
           '<label class="calc-check"><input type="checkbox" id="calc-3d"> 3D</label>' +
         '</fieldset>' +
+      '</div>' +
+      '<div class="calc-config__bar">' +
+        '<button type="button" class="btn btn-outline calc-flowtoggle" id="calc-flowtoggle" aria-pressed="true">Hide signal flow</button>' +
+        '<span class="calc-config__hint">Toggle the per-port routing overlay on the diagram above.</span>' +
       '</div>' +
       '<p class="calc-config__note">Signal patching is calculated at the selected frame rate and bit depth. Port capacities are the published nominal at 60Hz / 8-bit.</p>' +
     '</div>';
@@ -316,6 +363,24 @@
   function redrawDiagram(sig) {
     var slot = document.getElementById('calc-diagram-slot');
     if (slot && lastResult) slot.innerHTML = buildDiagramBlock(lastResult, sig);
+  }
+
+  // Current signal-patching result for the selected controller (null if none).
+  function currentSig() {
+    if (!lastResult) return null;
+    return window.LEDCalculator.signalPatching({
+      totalPixels: lastResult.specs.totalPixels,
+      totalPanels: lastResult.specs.totalPanels,
+      brandId: controllerState.brandId,
+      modelId: controllerState.modelId,
+      refreshHz: controllerState.refreshHz,
+      bitDepth: controllerState.bitDepth,
+    }, processorData);
+  }
+
+  // Redraws the diagram honouring the show/hide-flow toggle.
+  function redrawFlow() {
+    redrawDiagram(controllerState.showFlow ? currentSig() : null);
   }
 
   function renderSignalPatching() {
@@ -365,22 +430,32 @@
       '<p class="calc-patch__meta">' + capNote + '</p>' +
       warn;
 
-    redrawDiagram(sig);
+    redrawFlow();
   }
 
-  // ---- Power distribution (static from specs) ----------------------------
-  function buildPowerPatching(r) {
-    var s = r.specs;
+  // ---- Power distribution (depends on selected supply voltage) ------------
+  function buildPowerPatching(pp) {
     return '<div class="calc-patch">' +
       '<h4>Section B — Power Distribution <span class="calc-spec-est" title="General planning estimate">~</span></h4>' +
       '<div class="calc-patch__stats">' +
-        '<div class="calc-patch__stat"><span class="calc-patch__num">' + s.maxKw + ' kW</span><span class="calc-patch__lbl">max load</span></div>' +
-        '<div class="calc-patch__stat"><span class="calc-patch__num">' + s.avgKw + ' kW</span><span class="calc-patch__lbl">average load</span></div>' +
-        '<div class="calc-patch__stat"><span class="calc-patch__num">' + s.circuits + '</span><span class="calc-patch__lbl">×' + s.circuitBreakerA + 'A / ' + s.circuitVoltage + 'V circuits</span></div>' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">' + pp.maxKw + ' kW</span><span class="calc-patch__lbl">max load</span></div>' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">' + pp.avgKw + ' kW</span><span class="calc-patch__lbl">average load</span></div>' +
+        '<div class="calc-patch__stat"><span class="calc-patch__num">' + pp.circuits + '</span><span class="calc-patch__lbl">×' + pp.breakerA + 'A / ' + pp.voltage + 'V circuits</span></div>' +
       '</div>' +
-      '<p class="calc-patch__plan">Link a maximum of <strong>' + s.panelsPerCircuit + ' panels per ' + s.circuitBreakerA + 'A (' + s.circuitVoltage + 'V) circuit loop</strong> — a total of <strong>' + s.circuits + ' dedicated circuits</strong> for this wall.</p>' +
-      '<p class="calc-patch__meta">Assumes ' + s.perPanel.maxWatts + 'W max / ' + s.perPanel.avgWatts + 'W avg per 0.5m panel and the NEC 80% continuous-load rule (' + s.circuitBreakerA + 'A breaker → ' + s.circuitContinuousA + 'A continuous). General estimate on a US 120V basis — confirm the venue\'s actual supply with the technical team.</p>' +
+      '<p class="calc-patch__plan">Link a maximum of <strong>' + pp.panelsPerCircuit + ' panels per ' + pp.breakerA + 'A (' + pp.voltage + 'V) circuit loop</strong> — a total of <strong>' + pp.circuits + ' dedicated circuits</strong> for this wall.</p>' +
+      '<p class="calc-patch__meta">Assumes ' + pp.perPanel.maxWatts + 'W max / ' + pp.perPanel.avgWatts + 'W avg per 0.5m panel and an 80% continuous-load margin (' + pp.breakerA + 'A breaker at ' + pp.voltage + 'V → ' + pp.continuousA + 'A continuous). General estimate — confirm the venue\'s actual supply voltage and distribution with the technical team.</p>' +
     '</div>';
+  }
+
+  // Recomputes the voltage-dependent figures (spec cells + power section) when
+  // the supply-voltage selector changes -- no need to recalculate the wall.
+  function updatePower() {
+    if (!lastResult) return;
+    var pp = window.LEDCalculator.powerPlan(lastResult.specs.totalPanels, { voltage: controllerState.supplyVoltage });
+    var v = document.getElementById('spec-voltage'); if (v) v.textContent = pp.voltage + ' V';
+    var c = document.getElementById('spec-current'); if (c) c.textContent = pp.maxCurrentA + ' A';
+    var ci = document.getElementById('spec-circuits'); if (ci) ci.textContent = pp.circuits + ' @' + pp.continuousA + 'A max each';
+    var pw = document.getElementById('calc-power-plan'); if (pw) pw.innerHTML = buildPowerPatching(pp);
   }
 
   function wireControllerConfig() {
@@ -413,6 +488,28 @@
     if (recvSel) recvSel.addEventListener('change', function () { controllerState.receivingCard = recvSel.value; });
     if (hdr) hdr.addEventListener('change', function () { controllerState.hdr = hdr.checked; });
     if (threeD) threeD.addEventListener('change', function () { controllerState.threeD = threeD.checked; });
+
+    var voltageSel = document.getElementById('calc-voltage');
+    if (voltageSel) voltageSel.addEventListener('change', function () {
+      controllerState.supplyVoltage = Number(voltageSel.value);
+      updatePower();
+    });
+
+    var flowSel = document.getElementById('calc-flowdir');
+    if (flowSel) flowSel.addEventListener('change', function () {
+      var parts = flowSel.value.split('-');
+      controllerState.flowStart = parts[0];
+      controllerState.flowAxis = parts[1];
+      redrawFlow();
+    });
+
+    var flowToggle = document.getElementById('calc-flowtoggle');
+    if (flowToggle) flowToggle.addEventListener('click', function () {
+      controllerState.showFlow = !controllerState.showFlow;
+      flowToggle.setAttribute('aria-pressed', String(controllerState.showFlow));
+      flowToggle.textContent = controllerState.showFlow ? 'Hide signal flow' : 'Show signal flow';
+      redrawFlow();
+    });
   }
 
   function renderErrors(errors) {
@@ -438,6 +535,8 @@
       notes.push('For reference: VideoSonic\'s standard ' + r.standardConfig.aspectRatioLabel + ' configuration is ' + r.standardConfig.widthM.toFixed(1) + 'm × ' + r.standardConfig.heightM.toFixed(1) + 'm (' + r.standardConfig.cabinetsWide + '×' + r.standardConfig.cabinetsHigh + ' cabinets, ' + r.standardConfig.pitchMm + 'mm pixel pitch) — your estimate may be built up or down from this using the same cabinet modules.');
     }
 
+    var pp = window.LEDCalculator.powerPlan(r.specs.totalPanels, { voltage: controllerState.supplyVoltage });
+
     var main =
       '<div class="calc-main">' +
         '<span class="eyebrow">Your Estimated LED Wall</span>' +
@@ -455,7 +554,7 @@
         '<div class="calc-patch-wrap">' +
           '<h3>Technical Patching Plan</h3>' +
           '<div class="calc-patch" id="calc-signal-plan"><h4>Section A — Signal Patching</h4><p class="calc-patch__prompt">Select a controller brand and model above to generate the data-port and daisy-chain plan.</p></div>' +
-          buildPowerPatching(r) +
+          '<div id="calc-power-plan">' + buildPowerPatching(pp) + '</div>' +
         '</div>' +
         '<div class="calc-disclaimer">' +
           '<strong>Planning estimate only.</strong> LED wall size, pixel pitch, power and signal figures depend on venue dimensions, viewing distance, content and camera requirements, stage design, the confirmed panel product and available equipment. Final specifications should be confirmed by the VideoSonic technical production team.' +
@@ -470,7 +569,7 @@
         '</div>' +
       '</div>';
 
-    resultEl.innerHTML = '<div class="calc-layout">' + buildSpecPanel(r) + main + '</div>';
+    resultEl.innerHTML = '<div class="calc-layout">' + buildSpecPanel(r, pp) + main + '</div>';
     resultEl.hidden = false;
 
     wireControllerConfig();
