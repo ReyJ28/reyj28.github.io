@@ -24,8 +24,9 @@
 
   var M_TO_FT = 3.28084;
 
-  fetch('/data/led-equipment.json').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
-  fetch('/data/led-processors.json').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
+  // ?v bumped on each data change so browsers don't serve a stale cached copy.
+  fetch('/data/led-equipment.json?v=20260917b').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
+  fetch('/data/led-processors.json?v=20260917b').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
 
   track('calculator_view', { calculator_name: CALC_NAME });
   var startTracked = false;
