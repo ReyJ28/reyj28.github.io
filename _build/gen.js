@@ -171,6 +171,9 @@ function page({ route, title, description, canonical, active, heroHtml, bodyHtml
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8784012478733336"
+     crossorigin="anonymous"></script>
 ${ANALYTICS_HEAD}
 ${ogTags}
 <link rel="stylesheet" href="/assets/css/site.css">
