@@ -29,7 +29,7 @@
 <meta name="twitter:title" content="LED Wall Calculator | Free Size Tool | VideoSonic">
 <meta name="twitter:description" content="Free LED Wall Calculator: instantly estimate LED wall size and pixel pitch for your event in the Philippines based on viewing distance and audience size.">
 <meta name="twitter:image" content="https://www.video-sonic.com/images/optimized/projects/work-4.jpg">
-<link rel="stylesheet" href="/assets/css/site.css?v=20260917e">
+<link rel="stylesheet" href="/assets/css/site.css?v=20260929f">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
 {"@type":"Question","name":"How accurate is the LED Wall Calculator?","acceptedAnswer":{"@type":"Answer","text":"It is a planning estimate based on viewing distance and content type, meant to give a realistic starting point before talking to VideoSonic's technical team -- not a final engineering specification."}},
 {"@type":"Question","name":"Does audience size determine the LED wall size?","acceptedAnswer":{"@type":"Answer","text":"Not directly. Viewing distance and content type set the core dimensions; audience size mainly affects venue footprint and, for very large audiences, can widen the recommended screen for sightline coverage."}},
@@ -152,7 +152,13 @@
               <option value="custom">Custom</option>
             </select>
           </label>
+          <label for="calc-pixel-pitch">Pixel Pitch
+            <select id="calc-pixel-pitch" name="pixel_pitch" class="field">
+              <option value="auto">Auto (by viewing distance)</option>
+            </select>
+          </label>
         </div>
+        <p style="font-size:.82rem;color:var(--text-muted);margin-top:-8px">Pixel pitch sets the resolution: a smaller pitch packs more pixels per panel (sharper up close), a larger pitch fewer (fine for distant viewing). Only P3.9 is VideoSonic's verified standard — the others are general planning options.</p>
 
         <div id="calc-ratio-wrap" class="field-row" hidden>
           <label for="calc-placement-unit" style="grid-column:1/-1">Measurement Units
@@ -321,7 +327,7 @@
 <script src="/assets/js/site.js"></script>
 <script src="/assets/js/analytics.js"></script>
 
-<script src="/assets/js/led-calculator.js?v=20260917e"></script><script src="/assets/js/size-guide.js?v=20260917e"></script>
+<script src="/assets/js/led-calculator.js?v=20260929f"></script><script src="/assets/js/size-guide.js?v=20260929f"></script>
 <script src="/assets/js/momentcrm.js"></script>
 </body>
 </html>

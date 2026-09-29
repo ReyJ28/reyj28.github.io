@@ -13,6 +13,7 @@
   var placementUnit = document.getElementById('calc-placement-unit');
   var widthFt = document.getElementById('calc-width-ft');
   var heightFt = document.getElementById('calc-height-ft');
+  var pixelPitchSel = document.getElementById('calc-pixel-pitch');
   var errorsEl = document.getElementById('calc-errors');
   var resultEl = document.getElementById('calc-result');
   var equipmentData = null;
@@ -25,8 +26,21 @@
   var M_TO_FT = 3.28084;
 
   // ?v bumped on each data change so browsers don't serve a stale cached copy.
-  fetch('/data/led-equipment.json?v=20260917e').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; }).catch(function () {});
-  fetch('/data/led-processors.json?v=20260917e').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
+  fetch('/data/led-equipment.json?v=20260929f').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; populatePitchOptions(); }).catch(function () {});
+  fetch('/data/led-processors.json?v=20260929f').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
+
+  // Fills the Pixel Pitch selector from the data file (keeping the Auto option),
+  // and defaults to VideoSonic's verified standard pitch.
+  function populatePitchOptions() {
+    if (!pixelPitchSel) return;
+    var opts = (equipmentData && equipmentData.pitchOptions) || [];
+    if (!opts.length) return;
+    var html = '<option value="auto">Auto (by viewing distance)</option>';
+    opts.forEach(function (o) {
+      html += '<option value="' + o.pitchMm + '"' + (o.standard ? ' selected' : '') + '>' + esc(o.label) + ' (' + o.pitchMm + 'mm)</option>';
+    });
+    pixelPitchSel.innerHTML = html;
+  }
 
   track('calculator_view', { calculator_name: CALC_NAME });
   var startTracked = false;
@@ -629,6 +643,7 @@
       customUnit: placementUnit ? placementUnit.value : 'feet',
       customWidth: screenShape.value === 'custom' ? Number(widthFt.value) : undefined,
       customHeight: screenShape.value === 'custom' ? Number(heightFt.value) : undefined,
+      pixelPitchMm: (pixelPitchSel && pixelPitchSel.value !== 'auto') ? Number(pixelPitchSel.value) : undefined,
     };
 
     var result = window.LEDCalculator.calculate(input, equipmentData);

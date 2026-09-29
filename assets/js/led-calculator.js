@@ -224,6 +224,9 @@ window.LEDCalculator = (function () {
    * @param {number} [input.customHeight] - actual placement height (in customUnit), required if screenShape === 'custom'
    * @param {number} [input.customWidthFt] - deprecated alias for customWidth in feet (backward compatibility)
    * @param {number} [input.customHeightFt] - deprecated alias for customHeight in feet (backward compatibility)
+   * @param {number} [input.pixelPitchMm] - user-selected pixel pitch (mm). When set, drives the
+   *        resolution/total-pixel math directly; when omitted, pitch is auto-derived from the
+   *        verified inventory by viewing distance.
    * @param {Object} [equipmentData] - from data/led-equipment.json
    * @returns {Object} result
    */
@@ -310,9 +313,24 @@ window.LEDCalculator = (function () {
     };
     var pitchMm = null;          // numeric pitch, for pixel-count specs
     var minViewDistanceM = null; // manufacturer/verified minimum for that pitch
-    if (equipmentData && equipmentData.verified && Array.isArray(equipmentData.pixelPitchOptions) && equipmentData.pixelPitchOptions.length) {
-      var suitable = equipmentData.pixelPitchOptions.filter(function (opt) {
-        return distanceClamped >= (opt.minViewingDistanceM || 0);
+
+    var manualPitch = Number(input.pixelPitchMm);
+    if (isFinite(manualPitch) && manualPitch > 0) {
+      // User explicitly selected a pixel pitch to model -- use it directly.
+      // Its label / min-viewing-distance come from data/led-equipment.json's
+      // pitchOptions when listed there, otherwise from the 1mm≈1m heuristic.
+      pitchMm = manualPitch;
+      var opt = null;
+      if (equipmentData && Array.isArray(equipmentData.pitchOptions)) {
+        opt = equipmentData.pitchOptions.filter(function (o) { return o.pitchMm === manualPitch; })[0] || null;
+      }
+      minViewDistanceM = (opt && opt.minViewingDistanceM != null) ? opt.minViewingDistanceM : manualPitch;
+      var plabel = (opt && opt.label) ? opt.label : ('P' + manualPitch);
+      pixelPitch = { verified: !!(opt && opt.standard), label: manualPitch + 'mm pixel pitch (' + plabel + ')', category: plabel };
+    } else if (equipmentData && equipmentData.verified && Array.isArray(equipmentData.pixelPitchOptions) && equipmentData.pixelPitchOptions.length) {
+      // Auto: derive pitch from the verified inventory by viewing distance.
+      var suitable = equipmentData.pixelPitchOptions.filter(function (opt2) {
+        return distanceClamped >= (opt2.minViewingDistanceM || 0);
       });
       if (suitable.length) {
         var best = suitable.reduce(function (a, b) { return (a.pitchMm < b.pitchMm ? a : b); });
