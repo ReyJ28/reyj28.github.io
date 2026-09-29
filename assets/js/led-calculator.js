@@ -108,7 +108,11 @@ window.LEDCalculator = (function () {
   function buildSpecs(dims) {
     var totalPanels = dims.panelsWide * dims.panelsHigh;
 
-    var panelPxAxis = dims.pitchMm ? Math.round(PANEL_SIZE_MM / dims.pitchMm) : null;
+    // Prefer the real LED count per cabinet edge (pxPerPanel) -- the nominal
+    // pitch name is a rounded value, so 500/pitch would be wrong (e.g. P2.9 is
+    // 168, not round(500/2.9)=172). Fall back to 500/pitch only when no exact
+    // count is supplied.
+    var panelPxAxis = dims.pxPerPanel ? dims.pxPerPanel : (dims.pitchMm ? Math.round(PANEL_SIZE_MM / dims.pitchMm) : null);
     var resW = panelPxAxis ? dims.panelsWide * panelPxAxis : null;
     var resH = panelPxAxis ? dims.panelsHigh * panelPxAxis : null;
     var totalPixels = (resW && resH) ? resW * resH : null;
@@ -313,18 +317,20 @@ window.LEDCalculator = (function () {
     };
     var pitchMm = null;          // numeric pitch, for pixel-count specs
     var minViewDistanceM = null; // manufacturer/verified minimum for that pitch
+    var pxPerPanel = null;       // actual LED count per 500mm cabinet edge
 
     var manualPitch = Number(input.pixelPitchMm);
     if (isFinite(manualPitch) && manualPitch > 0) {
       // User explicitly selected a pixel pitch to model -- use it directly.
-      // Its label / min-viewing-distance come from data/led-equipment.json's
-      // pitchOptions when listed there, otherwise from the 1mm≈1m heuristic.
+      // Its label / min-viewing-distance / exact LED count come from
+      // data/led-equipment.json's pitchOptions when listed there.
       pitchMm = manualPitch;
       var opt = null;
       if (equipmentData && Array.isArray(equipmentData.pitchOptions)) {
         opt = equipmentData.pitchOptions.filter(function (o) { return o.pitchMm === manualPitch; })[0] || null;
       }
       minViewDistanceM = (opt && opt.minViewingDistanceM != null) ? opt.minViewingDistanceM : manualPitch;
+      pxPerPanel = (opt && opt.pxPerPanel) ? opt.pxPerPanel : null;
       var plabel = (opt && opt.label) ? opt.label : ('P' + manualPitch);
       pixelPitch = { verified: !!(opt && opt.standard), label: manualPitch + 'mm pixel pitch (' + plabel + ')', category: plabel };
     } else if (equipmentData && equipmentData.verified && Array.isArray(equipmentData.pixelPitchOptions) && equipmentData.pixelPitchOptions.length) {
@@ -337,6 +343,7 @@ window.LEDCalculator = (function () {
         pixelPitch = { verified: true, label: best.pitchMm + 'mm pixel pitch (' + best.name + ')', category: best.name };
         pitchMm = best.pitchMm;
         minViewDistanceM = best.minViewingDistanceM || null;
+        pxPerPanel = best.pxPerPanel || null;
       }
     }
 
@@ -344,6 +351,7 @@ window.LEDCalculator = (function () {
       panelsWide: panelsWide,
       panelsHigh: panelsHigh,
       pitchMm: pitchMm,
+      pxPerPanel: pxPerPanel,
     });
 
     // Standard configuration: if a verified, ready-built VideoSonic

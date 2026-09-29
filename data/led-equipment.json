@@ -1,21 +1,22 @@
 {
   "verified": true,
   "note": "Verified by the owner. pixelPitchOptions currently has one confirmed configuration -- VideoSonic's standard 16:9 build (P3.9, 9 columns x 5 rows of 0.5m x 0.5m cabinets = 4.5m x 2.5m). Add further confirmed configurations (other pitches, aspect ratios, indoor/outdoor variants) as entries in the same shape when verified.",
-  "pitchOptionsNote": "pitchOptions are STANDARD industry pixel-pitch categories offered in the calculator so users can model resolution at different pitches. Only P3.9 is VideoSonic's verified stock (standard:true); the others are general planning options, not a claim of inventory. minViewingDistanceM uses the common 1mm-pitch-per-1m-distance rule of thumb.",
+  "pitchOptionsNote": "pitchOptions are STANDARD industry pixel-pitch categories offered in the calculator so users can model resolution at different pitches. Only P3.9 is VideoSonic's verified stock (standard:true); the others are general planning options, not a claim of inventory. pxPerPanel is the ACTUAL LED count per 500mm cabinet edge (the nominal pitch name is a rounded value, e.g. P2.9 is really 500/168 = 2.976mm = 168x168); resolution must use pxPerPanel, not 500/pitchMm. minViewingDistanceM uses the common 1mm-pitch-per-1m-distance rule of thumb.",
   "pitchOptions": [
-    { "pitchMm": 1.5, "label": "P1.5 fine-pitch", "minViewingDistanceM": 1.5 },
-    { "pitchMm": 1.9, "label": "P1.9 fine-pitch", "minViewingDistanceM": 1.9 },
-    { "pitchMm": 2.6, "label": "P2.6 indoor", "minViewingDistanceM": 2.6 },
-    { "pitchMm": 2.9, "label": "P2.9 indoor", "minViewingDistanceM": 2.9 },
-    { "pitchMm": 3.9, "label": "P3.9 VideoSonic standard", "minViewingDistanceM": 3.9, "standard": true },
-    { "pitchMm": 4.8, "label": "P4.8 indoor/outdoor", "minViewingDistanceM": 4.8 },
-    { "pitchMm": 6.0, "label": "P6 outdoor", "minViewingDistanceM": 6 },
-    { "pitchMm": 10.0, "label": "P10 outdoor", "minViewingDistanceM": 10 }
+    { "pitchMm": 1.5, "label": "P1.5 fine-pitch", "pxPerPanel": 320, "minViewingDistanceM": 1.5 },
+    { "pitchMm": 1.9, "label": "P1.9 fine-pitch", "pxPerPanel": 256, "minViewingDistanceM": 1.9 },
+    { "pitchMm": 2.6, "label": "P2.6 indoor", "pxPerPanel": 192, "minViewingDistanceM": 2.6 },
+    { "pitchMm": 2.9, "label": "P2.9 indoor", "pxPerPanel": 168, "minViewingDistanceM": 2.9 },
+    { "pitchMm": 3.9, "label": "P3.9 VideoSonic standard", "pxPerPanel": 128, "minViewingDistanceM": 3.9, "standard": true },
+    { "pitchMm": 4.8, "label": "P4.8 indoor/outdoor", "pxPerPanel": 104, "minViewingDistanceM": 4.8 },
+    { "pitchMm": 6.25, "label": "P6.25 outdoor", "pxPerPanel": 80, "minViewingDistanceM": 6.25 },
+    { "pitchMm": 10.0, "label": "P10 outdoor", "pxPerPanel": 50, "minViewingDistanceM": 10 }
   ],
   "pixelPitchOptions": [
     {
       "name": "P3.9 Standard 16:9",
       "pitchMm": 3.9,
+      "pxPerPanel": 128,
       "minViewingDistanceM": 3.9,
       "cabinetsWide": 9,
       "cabinetsHigh": 5,

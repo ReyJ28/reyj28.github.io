@@ -26,8 +26,8 @@
   var M_TO_FT = 3.28084;
 
   // ?v bumped on each data change so browsers don't serve a stale cached copy.
-  fetch('/data/led-equipment.json?v=20260929f').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; populatePitchOptions(); }).catch(function () {});
-  fetch('/data/led-processors.json?v=20260929f').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
+  fetch('/data/led-equipment.json?v=20260929g').then(function (r) { return r.json(); }).then(function (d) { equipmentData = d; populatePitchOptions(); }).catch(function () {});
+  fetch('/data/led-processors.json?v=20260929g').then(function (r) { return r.json(); }).then(function (d) { processorData = d; }).catch(function () {});
 
   // Fills the Pixel Pitch selector from the data file (keeping the Auto option),
   // and defaults to VideoSonic's verified standard pitch.
